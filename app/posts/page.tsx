@@ -61,7 +61,7 @@ function PostsList() {
             <ul className="space-y-6 w-full max-w-4xl mx-auto">
               {posts.map((post) => (
                 <li key={post.id} className="border p-6 rounded-lg shadow-md bg-white">
-                  <Link href={`/posts/${post.id}`} className="text-2xl font-semibold text-blue-600 hover:underline">
+                  <Link href={`/posts/${post.id}`} className="text-2xl font-semibold text-gray-900 hover:underline">
                     {post.title}
                   </Link>
                   <p className="text-sm text-gray-500">by {post.author?.name || "Anonymous"}</p>

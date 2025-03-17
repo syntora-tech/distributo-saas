@@ -35,7 +35,7 @@ export default async function Post({ params }: { params: Promise<{ id: string }>
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8">
       <article className="max-w-3xl w-full bg-white shadow-lg rounded-lg p-8">
         {/* Post Title */}
-        <h1 className="text-5xl font-extrabold text-blue-600 mb-4">
+        <h1 className="text-5xl font-extrabold text-gray-900 mb-4">
           {post.title}
         </h1>
 

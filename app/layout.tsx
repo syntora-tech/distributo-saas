@@ -1,6 +1,7 @@
 // app/layout.tsx
 import "./globals.css";
 import Header from "./Header";
+import Providers from "./providers";
 
 export const metadata = {
   title: "Superblog",
@@ -15,10 +16,12 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body className="h-full overflow-hidden">
-        <div className="min-h-screen flex flex-col">
-          <Header />
-          <main className="flex-1 overflow-auto">{children}</main>
-        </div>
+        <Providers>
+          <div className="min-h-screen flex flex-col">
+            <Header />
+            <main className="flex-1 overflow-auto">{children}</main>
+          </div>
+        </Providers>
       </body>
     </html>
   );

@@ -30,7 +30,7 @@ export default async function Home() {
         {posts.map((post) => (
           <Link key={post.id} href={`/posts/${post.id}`} className="group">
             <div className="border rounded-lg shadow-md bg-white p-6 hover:shadow-lg transition-shadow duration-300">
-              <h2 className="text-2xl font-semibold text-blue-600 group-hover:underline mb-2">{post.title}</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 group-hover:underline mb-2">{post.title}</h2>
               <p className="text-sm text-gray-500">by {post.author ? post.author.name : "Anonymous"}</p>
               <p className="text-xs text-gray-400 mb-4">
                 {new Date(post.createdAt).toLocaleDateString("en-US", {

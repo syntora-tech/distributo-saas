@@ -1,41 +1,9 @@
-export const dynamic = "force-dynamic"; // This disables SSG and ISR
+"use client";
 
 import Form from "next/form";
-import prisma from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { createPost } from "./actions";
 
 export default function NewPost() {
-  async function createPost(formData: FormData) {
-    "use server";
-
-    const authorEmail = (formData.get("authorEmail") as string) || undefined;
-    const title = formData.get("title") as string;
-    const content = formData.get("content") as string;
-
-    const postData = authorEmail
-      ? {
-          title,
-          content,
-          author: {
-            connect: {
-              email: authorEmail,
-            },
-          },
-        }
-      : {
-          title,
-          content,
-        };
-
-    await prisma.post.create({
-      data: postData,
-    });
-
-    revalidatePath("/posts");
-    redirect("/posts");
-  }
-
   return (
     <div className="max-w-2xl mx-auto p-4">
       <h1 className="text-2xl font-bold mb-6">Create New Post</h1>
@@ -63,16 +31,6 @@ export default function NewPost() {
             name="content"
             placeholder="Write your post content here ..."
             rows={6}
-            className="w-full px-4 py-2 border rounded-lg"
-          />
-        </div>
-        <div>
-          <label htmlFor="authorEmail" className="block text-lg font-medium mb-2">Author</label>
-          <input
-            type="text"
-            id="authorEmail"
-            name="authorEmail"
-            placeholder="Enter the email of the author here ..."
             className="w-full px-4 py-2 border rounded-lg"
           />
         </div>

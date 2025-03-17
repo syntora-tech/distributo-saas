@@ -1,28 +1,54 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  // Create 5 users
-  await prisma.user.createMany({
-    data: [
-      { email: 'alice@example.com', name: 'Alice' },
-      { email: 'bob@example.com', name: 'Bob' },
-      { email: 'charlie@example.com', name: 'Charlie' },
-      { email: 'diana@example.com', name: 'Diana' },
-      { email: 'edward@example.com', name: 'Edward' },
-    ],
-  });
-
-  // Find all users to get their IDs
-  const userRecords = await prisma.user.findMany();
+  // Create 5 users with hashed passwords
+  const users = await Promise.all([
+    prisma.user.create({
+      data: {
+        email: 'alice@example.com',
+        name: 'Alice',
+        password: await bcrypt.hash('password123', 10),
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: 'bob@example.com',
+        name: 'Bob',
+        password: await bcrypt.hash('password123', 10),
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: 'charlie@example.com',
+        name: 'Charlie',
+        password: await bcrypt.hash('password123', 10),
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: 'diana@example.com',
+        name: 'Diana',
+        password: await bcrypt.hash('password123', 10),
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: 'edward@example.com',
+        name: 'Edward',
+        password: await bcrypt.hash('password123', 10),
+      },
+    }),
+  ]);
 
   const userIdMapping = {
-    alice: userRecords.find((user) => user.email === 'alice@example.com')?.id,
-    bob: userRecords.find((user) => user.email === 'bob@example.com')?.id,
-    charlie: userRecords.find((user) => user.email === 'charlie@example.com')?.id,
-    diana: userRecords.find((user) => user.email === 'diana@example.com')?.id,
-    edward: userRecords.find((user) => user.email === 'edward@example.com')?.id,
+    alice: users[0].id,
+    bob: users[1].id,
+    charlie: users[2].id,
+    diana: users[3].id,
+    edward: users[4].id,
   };
 
   // Create 15 posts distributed among users
@@ -104,7 +130,7 @@ async function main() {
         authorId: userIdMapping.edward 
       },
       { 
-        title: 'Optimizing Queries with Prisma’s Select and Include', 
+        title: 'Optimizing Queries with Prisma\'s Select and Include', 
         content: 'Proin vel diam vel nisi facilisis malesuada. Sed vitae diam nec magna mollis commodo a vitae nunc.', 
         published: false, 
         authorId: userIdMapping.edward 
