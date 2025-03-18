@@ -14,9 +14,30 @@ This repository provides a boilerplate to quickly set up a Next.js demo applicat
 
 ## Getting started
 
+### 1. Install dependencies
+
+After cloning the repo and navigating into it, install dependencies:
+
+```
+npm install
+```
+
 ### 1. Create a Prisma Postgres instance
 
-Create a Prisma Postgres database instance using [Prisma Data Platform](https://console.prisma.io):
+Create a Prisma Postgres instance by running the following command:
+
+```
+npx prisma init --db
+```
+
+When prompted:
+1. log in to the [Prisma Console](https://console.prisma.io)
+1. give a **name** to your Prisma project
+1. select a **region** for your Prisma Postgres instance
+
+Once the command has terminated, copy the 
+
+<!-- Create a Prisma Postgres database instance using [Prisma Data Platform](https://console.prisma.io):
 
 1. Navigate to [Prisma Data Platform](https://console.prisma.io).
 2. Click **New project** to create a new project.
@@ -24,7 +45,7 @@ Create a Prisma Postgres database instance using [Prisma Data Platform](https://
 4. Inside the **Prisma Postgres** section, click **Get started**.
 5. Choose a region close to your location from the **Region** dropdown.
 6. Click **Create project** to set up your database. This redirects you to the database setup page.
-7. In the **Set up database access** section, copy the `DATABASE_URL`. You will use this in the next steps.
+7. In the **Set up database access** section, copy the `DATABASE_URL`. You will use this in the next steps. -->
 
 ### 2. Setup your `.env` file
 
@@ -49,7 +70,7 @@ Run the following commands to set up your database and Prisma schema:
 ```bash
 npx prisma migrate dev --name init
 ```
-
+<!-- 
 <details>
 
 <summary>Expand for <code>yarn</code>, <code>pnpm</code> or <code>bun</code></summary>
@@ -65,7 +86,7 @@ pnpm prisma migrate dev --name init
 bun prisma migrate dev --name init
 ```
 
-</details>
+</details> -->
 
 ### 4. Seed the database
 
