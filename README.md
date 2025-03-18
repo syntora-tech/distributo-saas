@@ -2,8 +2,6 @@
 
 This repository provides a boilerplate to quickly set up a Next.js demo application with authentication using [NextAuth.js](https://next-auth.js.org/), [Prisma Postgres](https://www.prisma.io/postgres) and [Prisma ORM](https://www.prisma.io/orm), and deploy it to Vercel. It includes an easy setup process and example routes that demonstrate basic CRUD operations against the database.
 
-![](./nextjs-ppg-template.png)
-
 ## Features
 
 - Next.js 15 app with App Router, Server Actions & API Routes
