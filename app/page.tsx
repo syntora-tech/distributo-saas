@@ -2,12 +2,8 @@ export const dynamic = "force-dynamic"; // This disables SSG and ISR
 
 import prisma from "@/lib/prisma";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 export default async function Home() {
-  if (!process.env.DATABASE_URL || process.env.DATABASE_URL === "prisma+postgres://accelerate.prisma-data.net/?api_key=API_KEY") {
-    redirect("/setup");
-  }
 
   const posts = await prisma.post.findMany({
     orderBy: {
