@@ -14,7 +14,7 @@ export default function RegisterPage() {
       event.preventDefault();
       const formData = new FormData(event.currentTarget);
       const signInResult = await signIn("credentials", {
-        ...Object.fromEntries(formData.entries()),
+        ...Object.fromEntries(formData),
         redirect: false,
       });
 
