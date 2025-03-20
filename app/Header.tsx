@@ -29,10 +29,8 @@ export default function Header() {
               </Link>
               <div className="flex items-center space-x-4">
                 <div className="text-sm text-gray-500">
-                {<div>Username</div>}
-                <div>Email</div>
-                  {/* {session.user?.name && <div>{session.user.name}</div>}
-                  <div>{session.user?.email}</div> */}
+                  {session.user?.name && <div>{session.user.name}</div>}
+                  <div>{session.user?.email}</div>
                 </div>
                 <button
                   onClick={() => signOut()}
