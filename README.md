@@ -1,6 +1,6 @@
 # Next.js & Prisma Postgres Auth Starter
 
-This repository provides a boilerplate to quickly set up a Next.js demo application with authentication using [NextAuth.js](https://next-auth.js.org/), [Prisma Postgres](https://www.prisma.io/postgres) and [Prisma ORM](https://www.prisma.io/orm), and deploy it to Vercel. It includes an easy setup process and example routes that demonstrate basic CRUD operations against the database.
+This repository provides a boilerplate to quickly set up a Next.js demo application with authentication using [NextAuth.js v4](https://next-auth.js.org/), [Prisma Postgres](https://www.prisma.io/postgres) and [Prisma ORM](https://www.prisma.io/orm), and deploy it to Vercel. It includes an easy setup process and example routes that demonstrate basic CRUD operations against the database.
 
 ## Features
 
@@ -29,6 +29,7 @@ npx prisma init --db
 ```
 
 This command is interactive and will prompt you to:
+
 1. Log in to the [Prisma Console](https://console.prisma.io)
 1. Select a **region** for your Prisma Postgres instance
 1. Give a **name** to your Prisma project
@@ -64,25 +65,21 @@ DATABASE_URL="prisma+postgres://accelerate.prisma-data.net/?api_key=PRISMA_POSTG
 To ensure your authentication works properly, you'll also need to set [env vars for NextAuth.js](https://next-auth.js.org/configuration/options):
 
 ```bash
-NEXTAUTH_SECRET="RANDOM_32_CHARACTER_STRING"
-NEXTAUTH_URL="URL"
+AUTH_SECRET="RANDOM_32_CHARACTER_STRING"
 ```
 
-You can generate a random 32 character string for the `NEXTAUTH_SECRET` secret with this command:
+You can generate a random 32 character string for the `AUTH_SECRET` secret with this command:
 
 ```
 npx auth secret
 ```
 
-When developing locally and running your app on port `3000`, your `NEXTAUTH_URL` should be `http://localhost:3000`.
-
 In the end, your entire `.env` file should look similar to this (but using _your own values_ for the env vars):
 
 ```bash
-DATABASE_URL="prisma+postgres://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGlfa2V5IjoiMWEzMjBiYTEtYjg2Yy00ZTA5LThmZTktZDBhODA3YjQwZjBkIiwidGVuYW50X2lkIjoiY2RhYmM3ZTU1NzdmMmIxMmM0ZTI1Y2IwNWJhZmZhZmU4NjAxNzkxZThlMzhlYjI1NDgwNmIzZjI5NmU1NTkzNiIsImludGVybmFsX3NlY3JldCI6ImI3YmQzMjFhLTY2ODQtNGRiMC05ZWRiLWIyMGE2ZTQ0ZDMwMSJ9.JgKXQBatjjh7GIG3_fRHDnia6bDv8BdwvaX5F-XdBfw" 
+DATABASE_URL="prisma+postgres://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGlfa2V5IjoiMWEzMjBiYTEtYjg2Yy00ZTA5LThmZTktZDBhODA3YjQwZjBkIiwidGVuYW50X2lkIjoiY2RhYmM3ZTU1NzdmMmIxMmM0ZTI1Y2IwNWJhZmZhZmU4NjAxNzkxZThlMzhlYjI1NDgwNmIzZjI5NmU1NTkzNiIsImludGVybmFsX3NlY3JldCI6ImI3YmQzMjFhLTY2ODQtNGRiMC05ZWRiLWIyMGE2ZTQ0ZDMwMSJ9.JgKXQBatjjh7GIG3_fRHDnia6bDv8BdwvaX5F-XdBfw"
 
-NEXTAUTH_SECRET="gTwLSXFeNWFRpUTmxlRniOfegXYw445pd0k6JqXd7Ag=" 
-NEXTAUTH_URL="http://localhost:3000"
+AUTH_SECRET="gTwLSXFeNWFRpUTmxlRniOfegXYw445pd0k6JqXd7Ag="
 ```
 
 ### 3. Migrate the database
@@ -92,7 +89,8 @@ Run the following commands to set up your database and Prisma schema:
 ```bash
 npx prisma migrate dev --name init
 ```
-<!-- 
+
+<!--
 <details>
 
 <summary>Expand for <code>yarn</code>, <code>pnpm</code> or <code>bun</code></summary>
