@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 
 export default function Header() {
