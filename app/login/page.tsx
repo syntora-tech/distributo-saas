@@ -10,13 +10,11 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    
     try {
+      event.preventDefault();
+      const formData = new FormData(event.currentTarget);
       const response = await signIn("credentials", {
-        email: formData.get("email"),
-        password: formData.get("password"),
+        ...Object.fromEntries(formData),
         redirect: false,
       });
 
@@ -91,4 +89,4 @@ export default function LoginPage() {
       </div>
     </div>
   );
-} 
+}

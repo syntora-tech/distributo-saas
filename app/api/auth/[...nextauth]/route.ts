@@ -9,6 +9,7 @@ export const authOptions = {
       name: "credentials",
       credentials: {
         email: { label: "Email", type: "email" },
+        name: { label: "Name", type: "name" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
@@ -20,8 +21,14 @@ export const authOptions = {
           where: { email: credentials.email },
         });
 
-        if (!user?.password) {
-          throw new Error("Invalid credentials");
+        if (!user) {
+          return await prisma.user.create({
+            data: {
+              name: credentials.name ?? credentials.email,
+              email: credentials.email,
+              password: await bcrypt.hash(credentials.password, 10),
+            },
+          });
         }
 
         const isCorrectPassword = await bcrypt.compare(
