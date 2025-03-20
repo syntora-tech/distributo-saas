@@ -10,33 +10,11 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
-    
     try {
-      const response = await fetch("/api/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.get("name"),
-          email,
-          password,
-        }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || "Registration failed");
-      }
-
-      // Sign in the user immediately after successful registration
+      event.preventDefault();
+      const formData = new FormData(event.currentTarget);
       const signInResult = await signIn("credentials", {
-        email,
-        password,
+        ...Object.fromEntries(formData.entries()),
         redirect: false,
       });
 
@@ -124,4 +102,4 @@ export default function RegisterPage() {
       </div>
     </div>
   );
-} 
+}
