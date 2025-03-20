@@ -65,10 +65,10 @@ DATABASE_URL="prisma+postgres://accelerate.prisma-data.net/?api_key=PRISMA_POSTG
 To ensure your authentication works properly, you'll also need to set [env vars for NextAuth.js](https://next-auth.js.org/configuration/options):
 
 ```bash
-NEXTAUTH_SECRET="RANDOM_32_CHARACTER_STRING"
+AUTH_SECRET="RANDOM_32_CHARACTER_STRING"
 ```
 
-You can generate a random 32 character string for the `NEXTAUTH_SECRET` secret with this command:
+You can generate a random 32 character string for the `AUTH_SECRET` secret with this command:
 
 ```
 npx auth secret
@@ -79,7 +79,7 @@ In the end, your entire `.env` file should look similar to this (but using _your
 ```bash
 DATABASE_URL="prisma+postgres://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGlfa2V5IjoiMWEzMjBiYTEtYjg2Yy00ZTA5LThmZTktZDBhODA3YjQwZjBkIiwidGVuYW50X2lkIjoiY2RhYmM3ZTU1NzdmMmIxMmM0ZTI1Y2IwNWJhZmZhZmU4NjAxNzkxZThlMzhlYjI1NDgwNmIzZjI5NmU1NTkzNiIsImludGVybmFsX3NlY3JldCI6ImI3YmQzMjFhLTY2ODQtNGRiMC05ZWRiLWIyMGE2ZTQ0ZDMwMSJ9.JgKXQBatjjh7GIG3_fRHDnia6bDv8BdwvaX5F-XdBfw"
 
-NEXTAUTH_SECRET="gTwLSXFeNWFRpUTmxlRniOfegXYw445pd0k6JqXd7Ag="
+AUTH_SECRET="gTwLSXFeNWFRpUTmxlRniOfegXYw445pd0k6JqXd7Ag="
 ```
 
 ### 3. Migrate the database
