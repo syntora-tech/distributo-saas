@@ -14,7 +14,7 @@ export default function LoginPage() {
       event.preventDefault();
       const formData = new FormData(event.currentTarget);
       const response = await signIn("credentials", {
-        ...Object.fromEntries(formData.entries()),
+        ...Object.fromEntries(formData),
         redirect: false,
       });
 
