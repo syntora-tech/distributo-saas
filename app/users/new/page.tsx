@@ -12,7 +12,7 @@ export default function NewUser() {
     const email = formData.get("email") as string;
 
     await prisma.user.create({
-      data: { name, email },
+      data: { name, email, password: "" }, // password will be added by NextAuth
     });
 
     redirect("/");
