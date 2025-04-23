@@ -1,4 +1,3 @@
-import { initializeDatabase } from "@/lib/db-utils";
 import SetupInstructions from "./setup-instructions";
 
 export default function SetupPage() {
@@ -9,8 +8,8 @@ export default function SetupPage() {
           Welcome to Superblog
         </h1>
         <p className="text-gray-600 mb-8 text-center">
-          It looks like your database isn't set up yet. Follow the instructions
-          below to get started.
+          It looks like your database isn&apos;t set up yet. Follow the
+          instructions below to get started.
         </p>
 
         <SetupInstructions />
