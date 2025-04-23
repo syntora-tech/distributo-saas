@@ -45,8 +45,8 @@ export default function SetupSteps() {
         </ol>
         <p className="text-gray-600 mt-3">
           Once the command has terminated, copy the{" "}
-          <strong>Database URL</strong> from the terminal output. You'll need it
-          in the next step.
+          <strong>Database URL</strong> from the terminal output. You&apos;ll
+          need it in the next step.
         </p>
       </section>
 
@@ -70,8 +70,8 @@ export default function SetupSteps() {
           code={`DATABASE_URL="prisma+postgres://accelerate.prisma-data.net/?api_key=PRISMA_POSTGRES_API_KEY"`}
         />
         <p className="text-gray-600 mb-3 mt-3">
-          To ensure your authentication works properly, you'll also need to set
-          env vars for NextAuth.js:
+          To ensure your authentication works properly, you&apos;ll also need to
+          set env vars for NextAuth.js:
         </p>
         <CodeBlock code={`AUTH_SECRET="RANDOM_32_CHARACTER_STRING"`} />
         <p className="text-gray-600 mb-3 mt-3">

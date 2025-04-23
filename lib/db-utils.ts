@@ -11,7 +11,7 @@ export async function checkPostTableExists(): Promise<boolean> {
     // Try to query the post table
     await prisma.post.findFirst();
     return true;
-  } catch (error) {
+  } catch {
     // If there's an error, the table likely doesn't exist
     return false;
   }
