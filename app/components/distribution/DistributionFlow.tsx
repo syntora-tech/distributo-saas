@@ -57,14 +57,14 @@ export default function DistributionFlow() {
 
     return (
         <div className="max-w-4xl mx-auto">
-            <nav aria-label="Progress" className="mb-8">
+            <nav aria-label="Progress" className="mb-12">
                 <ol role="list" className="space-y-4 md:flex md:space-x-8 md:space-y-0">
                     {steps.map((step, index) => (
                         <li key={step.id} className="md:flex-1">
                             <div
                                 className={`group flex flex-col border-l-4 py-2 pl-4 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4 ${index <= currentStep
-                                    ? 'border-blue-600'
-                                    : 'border-gray-200'
+                                        ? 'border-blue-600'
+                                        : 'border-gray-200'
                                     }`}
                             >
                                 <span className="text-sm font-medium text-blue-600">
@@ -77,16 +77,16 @@ export default function DistributionFlow() {
                 </ol>
             </nav>
 
-            <div className="bg-white shadow rounded-lg p-6">
+            <div className="bg-white shadow-sm rounded-xl p-8">
                 {renderStep()}
 
-                <div className="mt-8 flex justify-between">
+                <div className="mt-12 flex justify-between">
                     <button
                         onClick={handleBack}
                         disabled={currentStep === 0}
-                        className={`px-4 py-2 text-sm font-medium rounded-md ${currentStep === 0
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                        className={`px-6 py-3 text-sm font-medium rounded-lg ${currentStep === 0
+                                ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                                : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                             }`}
                     >
                         Back
@@ -94,14 +94,14 @@ export default function DistributionFlow() {
                     {currentStep === steps.length - 1 ? (
                         <button
                             onClick={handleSubmit}
-                            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                            className="px-6 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
                         >
                             Submit Distribution
                         </button>
                     ) : (
                         <button
                             onClick={handleNext}
-                            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                            className="px-6 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
                         >
                             Next
                         </button>

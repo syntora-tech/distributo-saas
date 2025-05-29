@@ -10,9 +10,9 @@ interface CreateStepProps {
 
 export default function CreateStep({ formData, onChange }: CreateStepProps) {
     return (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold">Create Distribution</h2>
-            <div className="space-y-4">
+        <div className="space-y-8">
+            <h2 className="text-2xl font-bold text-gray-900">Create Distribution</h2>
+            <div className="space-y-6">
                 <Input
                     label="Token Address"
                     value={formData.tokenAddress}
