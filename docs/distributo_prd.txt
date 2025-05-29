@@ -1,0 +1,173 @@
+# Project Document: Airdrop Automator for Solana (SPL Tokens)
+
+## 1. Project Description
+
+**Product Name:** Airdrop Automator for Solana
+
+**Target Audience:**
+
+* DeFi projects
+* NFT projects
+* DAOs
+* Crypto exchanges and marketing campaigns
+
+**Overall Goal:**
+To create a SaaS platform for automated SPL token distribution on the Solana blockchain. Users can import CSV files with wallet addresses and token amounts, estimate costs, and initiate secure, optimized token distribution sessions.
+
+## 2. Value Proposition
+
+* Fast and automated token distribution
+* Network and service cost optimization
+* User-defined transaction speed
+* Secure fund and key management
+
+## 3. Product Functionality
+
+### Basic Features
+
+* CSV import and preview table
+* Manual recipient management (add/edit/delete)
+* SPL ATA creation automation
+* Transfer optimization (batching)
+* Dynamic gas and service fee estimation
+* Secure dedicated deposit address generation
+
+### Premium Features
+
+* Percentage-based transfer fee
+* Fixed transaction execution fee
+* Discounts for high-volume campaigns
+* REST API for automation
+
+## 4. System Architecture
+
+### On-Chain
+
+* SPL Token transfers via Solana RPC
+* ATA account management
+
+### Off-Chain (Next.js API)
+
+* REST endpoints for distributions and reports
+* PostgreSQL via Prisma ORM
+* Hash-based user validation
+* No user sessions, signature-based requests
+
+## 5. Web Application Modules
+
+### 5.1 Calculator
+
+Estimate total costs based on:
+
+* Number of recipients
+* Transaction speed (standard / priority)
+
+Returns:
+
+* Estimated network fee
+* Service fee
+* Total cost
+* Estimated execution time
+
+### 5.2 Distribution Flow
+
+#### Step 1: Create Distribution
+
+* User provides token address + name
+* Signs payload using wallet
+* API creates DB entry and returns deposit address
+
+#### Step 2: Add Recipients
+
+* Import CSV or manual entry
+* Client-side validation (address format, duplicates)
+* Store list client-side (signed only on send)
+
+#### Step 3: Deposit Funding
+
+* Show deposit address for token + SOL
+* Auto or manual funding
+
+#### Step 4: Start Distribution
+
+* Client calculates hash of recipients
+* Signs hash and sends to `/api/distribution/start`
+* Backend verifies balance and launches transfer logic
+
+#### Step 5: Monitor & Report
+
+* Real-time status tracking via WebSocket or polling
+* Final report available via `/api/distribution/:id/report`
+* CSV export and data persistence
+
+## 6. API Endpoints
+
+### `GET /api/fee`
+
+Returns current estimated fees.
+
+### `POST /api/distribution/create`
+
+Creates a distribution entity with signed payload.
+Returns UUID and deposit address.
+
+### `POST /api/distribution/start`
+
+Initiates signed distribution process with token list.
+
+### `GET /api/distribution/:id/report`
+
+Returns token distribution result by ID.
+
+### `GET /api/distribution/user/:wallet`
+
+Returns all distributions for a specific wallet.
+
+## 7. Execution Process Summary
+
+1. Create distribution (signed payload)
+2. Add recipients (frontend-only)
+3. Display fee estimation (via `/api/fee`)
+4. User funds deposit wallet
+5. Submit signed distribution list hash
+6. Backend validates and executes
+7. Results stored and accessible
+
+## 8. Use Case Examples
+
+* DeFi projects distributing liquidity rewards
+* NFT teams airdropping tokens to holders
+* DAOs allocating governance tokens
+* Exchanges delivering promotional incentives
+
+## 9. Security
+
+* Keyless architecture (wallet signature only)
+* Dedicated deposit address per distribution
+* Signature verification before distribution
+* Full transaction logging and protection against replays
+
+## 10. Advantages of Solana
+
+* High speed, low cost
+* Scales to mass token delivery
+* Built-in ATA model simplifies token handling
+
+## 11. User Stories
+
+### Guest User
+
+* View service info and calculator
+* Estimate fees without wallet
+
+### Connected Wallet User
+
+* Create distribution by signing payload
+* See historical distributions
+* Export and view reports
+
+### Power User Flow
+
+* Validate list client-side
+* Sign hash for backend verification
+* Track status and access report anytime

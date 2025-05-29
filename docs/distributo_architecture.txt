@@ -1,0 +1,106 @@
+# Architecture Document: Airdrop Automator (Solana)
+
+## 1. Overview
+
+A fullstack Solana-native token distribution dApp using Next.js. The backend serves as a stateless API validating signed requests and executing SPL token transactions.
+
+## 2. Tech Stack
+
+### Frontend
+
+* **Framework:** Next.js (App Router)
+* **Styling:** Tailwind CSS + ShadCN UI
+* **State:** Zustand / React Context
+* **CSV parsing:** PapaParse
+* **Validation:** Zod (client-side)
+* **Web3:** @solana/web3.js, @solana/wallet-adapter
+
+### Backend (Next.js API Routes)
+
+* **Runtime:** Node.js / Vercel / Serverless
+* **DB:** PostgreSQL + Prisma ORM
+* **Queue:** In-memory or Redis (optional for scale)
+
+### Blockchain
+
+* **Protocol:** Solana
+* **Token:** SPL standard
+* **RPC Provider:** Helius or QuickNode
+* **Wallet Adapters:** Phantom, Solflare
+
+## 3. Data Model (via Prisma)
+
+```prisma
+model Distribution {
+  id             String   @id @default(uuid())
+  tokenAddress   String
+  name           String?
+  wallet         String
+  depositAddress String
+  createdAt      DateTime @default(now())
+  status         String   // pending, in-progress, completed
+  transactions   Transaction[]
+}
+
+model Transaction {
+  id              String   @id @default(uuid())
+  distributionId  String
+  type            String   // service | transfer
+  recipient       String?
+  amount          String?
+  txHash          String
+  createdAt       DateTime @default(now())
+}
+```
+
+## 4. API Contracts
+
+(Defined in the PRD)
+
+* Signature-based creation and launch
+* No session/auth — trust via wallet signature
+* Report available without auth post-execution
+
+## 5. Flow Summary
+
+1. **Create Distribution**
+
+   * Sign `{ token, name }`
+   * Backend verifies, generates deposit address, saves
+
+2. **Client adds recipients** (locally only)
+
+   * UI parses and validates
+
+3. **User funds deposit**
+
+   * Token + SOL for fees
+
+4. **Start Distribution**
+
+   * User signs hash of recipient list
+   * Backend validates and executes SPL transfers
+
+5. **Receive report**
+
+   * Fetch report via `/api/distribution/:id/report`
+   * JSON + CSV ready
+
+## 6. Security Practices
+
+* Validate wallet signatures before DB write
+* Verify deposit balances before send
+* Track transaction status
+* Re-entrancy guards and signature replay protection
+
+## 7. Scalability Notes
+
+* Stateless API enables serverless-friendly deployment
+* Async jobs (e.g., queue) can be added later for batching
+* CSV files not persisted, only parsed in-browser
+
+## 8. Monitoring & Logging
+
+* Transaction execution logs
+* Error tracking via Sentry
+* Metrics via Grafana/Prometheus if self-hosted
