@@ -47,19 +47,22 @@ export default function ReviewStep({ formData }: ReviewStepProps) {
 
             <div className="bg-white border-2 border-gray-100 rounded-xl p-8">
                 <h3 className="text-lg font-semibold text-gray-900 mb-6">Recipients List</h3>
-                <div className="max-h-60 overflow-y-auto">
-                    <div className="bg-gray-50 rounded-lg">
-                        <div className="grid grid-cols-12 gap-4 p-4 font-medium text-sm text-gray-500 uppercase tracking-wider">
-                            <div className="col-span-6">Address</div>
-                            <div className="col-span-6">Amount</div>
-                        </div>
-                        <div className="divide-y divide-gray-100">
-                            {formData.recipients.map((recipient, index) => (
-                                <div key={index} className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-gray-50">
-                                    <div className="col-span-6 font-mono text-sm text-gray-900">{recipient.address}</div>
-                                    <div className="col-span-6 text-sm text-gray-900">{recipient.amount}</div>
-                                </div>
-                            ))}
+                <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-b from-white via-transparent to-white pointer-events-none z-10" />
+                    <div className="max-h-[300px] overflow-y-auto pr-4 -mr-4">
+                        <div className="bg-gray-50 rounded-lg">
+                            <div className="sticky top-0 bg-gray-50 z-20 grid grid-cols-12 gap-4 p-4 font-medium text-sm text-gray-500 uppercase tracking-wider">
+                                <div className="col-span-6">Address</div>
+                                <div className="col-span-6">Amount</div>
+                            </div>
+                            <div className="divide-y divide-gray-100">
+                                {formData.recipients.map((recipient, index) => (
+                                    <div key={index} className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-gray-50">
+                                        <div className="col-span-6 font-mono text-sm text-gray-900">{recipient.address}</div>
+                                        <div className="col-span-6 text-sm text-gray-900">{recipient.amount}</div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
