@@ -114,8 +114,8 @@ ${data.recipients.map(r => `${r.address}: ${r.amount}`).join('\n')}`;
                         <li key={step.id} className="md:flex-1">
                             <div
                                 className={`group flex flex-col border-l-4 py-2 pl-4 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4 ${index <= currentStep
-                                        ? 'border-blue-600'
-                                        : 'border-gray-200'
+                                    ? 'border-blue-600'
+                                    : 'border-gray-200'
                                     }`}
                             >
                                 <span className="text-sm font-medium text-blue-600">
@@ -137,8 +137,8 @@ ${data.recipients.map(r => `${r.address}: ${r.amount}`).join('\n')}`;
                             onClick={handleBack}
                             disabled={currentStep === 0}
                             className={`px-6 py-3 text-sm font-medium rounded-lg ${currentStep === 0
-                                    ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
-                                    : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                                : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                                 }`}
                         >
                             Back
