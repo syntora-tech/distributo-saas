@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Recipient } from '../types/distribution';
 
 interface CSVImportProps {
@@ -9,6 +9,7 @@ interface CSVImportProps {
 
 export default function CSVImport({ onImport }: CSVImportProps) {
     const [error, setError] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -44,8 +45,15 @@ export default function CSVImport({ onImport }: CSVImportProps) {
 
                 onImport(recipients);
                 setError(null);
+
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = '';
+                }
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to parse CSV file');
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = '';
+                }
             }
         };
         reader.readAsText(file);
@@ -88,6 +96,7 @@ export default function CSVImport({ onImport }: CSVImportProps) {
                         >
                             <span>Upload a file</span>
                             <input
+                                ref={fileInputRef}
                                 id="file-upload"
                                 name="file-upload"
                                 type="file"
