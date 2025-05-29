@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useSession, signOut } from "next-auth/react";
+import { usePathname } from "next/navigation";
 
 export default function Header() {
-  const { data: session } = useSession();
+  const pathname = usePathname();
+  const isDistributionPage = pathname === '/distribution';
 
   return (
     <header className="w-full bg-white shadow-md py-4 px-8">
@@ -21,10 +22,10 @@ export default function Header() {
         </Link>
         <div className="flex items-center space-x-4">
           <Link
-            href="/distribution"
+            href={isDistributionPage ? "/" : "/distribution"}
             className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
           >
-            Start Distribution
+            {isDistributionPage ? "Go to Calculator" : "Start Distribution"}
           </Link>
           <button
             className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition flex items-center space-x-2"
