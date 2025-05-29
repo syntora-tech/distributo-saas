@@ -119,20 +119,18 @@ export default function DistributionFlow() {
                             <div className="mt-4">
                                 <h3 className="text-lg font-semibold mb-2">Recipients List ({state.formData.recipients.length})</h3>
                                 <div className="max-h-60 overflow-y-auto">
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-gray-50">
-                                            <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
+                                    <div className="bg-gray-50 rounded-lg">
+                                        <div className="grid grid-cols-12 gap-4 p-4 font-medium text-sm text-gray-500 uppercase tracking-wider">
+                                            <div className="col-span-6">Address</div>
+                                            <div className="col-span-4">Amount</div>
+                                            <div className="col-span-2">Actions</div>
+                                        </div>
+                                        <div className="divide-y divide-gray-200">
                                             {state.formData.recipients.map((recipient, index) => (
-                                                <tr key={index}>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono">{recipient.address}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm">{recipient.amount}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                <div key={index} className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-gray-50">
+                                                    <div className="col-span-6 font-mono text-sm">{recipient.address}</div>
+                                                    <div className="col-span-4 text-sm">{recipient.amount}</div>
+                                                    <div className="col-span-2">
                                                         <button
                                                             onClick={() => {
                                                                 setState(prev => ({
@@ -147,11 +145,11 @@ export default function DistributionFlow() {
                                                         >
                                                             Remove
                                                         </button>
-                                                    </td>
-                                                </tr>
+                                                    </div>
+                                                </div>
                                             ))}
-                                        </tbody>
-                                    </table>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}
