@@ -40,7 +40,7 @@ Create a multi-step distribution flow component that guides users through the to
 - 001-calculator-component.md
 
 ## Status
-TODO
+DONE
 
 ## Notes
 - Consider adding a progress save feature

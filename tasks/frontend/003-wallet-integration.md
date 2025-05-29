@@ -7,7 +7,6 @@ Implement secure wallet integration for Solana using Phantom and other popular w
 - Support multiple wallets:
   - Phantom
   - Solflare
-  - Backpack
 - Implement wallet connection flow
 - Handle wallet disconnection
 - Implement transaction signing
@@ -27,7 +26,7 @@ Implement secure wallet integration for Solana using Phantom and other popular w
 - None
 
 ## Status
-TODO
+DONE
 
 ## Notes
 - Consider adding wallet auto-connect
