@@ -35,6 +35,10 @@ tasks/
    - Requirements
    - Current status
    - Dependencies (if any)
+8. When task is completed:
+   - Update task status to DONE
+   - Create commit with message "feat: [task-name] - [short description]"
+   - No need to ask for commit message, just do it
 
 ## Current Tasks Status
 

@@ -28,9 +28,12 @@ Design and implement the database schema for the Distributo platform.
 - None
 
 ## Status
-TODO
+DONE
 
 ## Notes
 - Consider adding soft deletes
 - Add proper data validation
-- Consider adding data archiving 
+- Consider adding data archiving
+- Added DepositAddress model for managing deposit addresses
+- Added indexes for optimization
+- Added seed data 

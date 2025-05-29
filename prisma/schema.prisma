@@ -14,20 +14,124 @@ datasource db {
 }
 
 model User {
-  id       String  @id @default(cuid())
-  name     String?
-  email    String  @unique
-  password String
-  posts    Post[]
+  id            String         @id @default(cuid())
+  walletAddress String         @unique
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  deletedAt     DateTime?
+  distributions Distribution[]
+  transactions  Transaction[]
+  depositAddresses DepositAddress[]
+
+  @@index([walletAddress])
 }
 
-model Post {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String?
-  author    User?    @relation(fields: [authorId], references: [id])
+model Distribution {
+  id          String       @id @default(cuid())
+  name        String
+  tokenAddress String
+  status      DistributionStatus @default(PENDING)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  deletedAt   DateTime?
+  userId      String
+  user        User         @relation(fields: [userId], references: [id])
+  depositAddressId String?
+  depositAddress   DepositAddress? @relation(fields: [depositAddressId], references: [id])
+  recipients  Recipient[]
+  transactions Transaction[]
+  fees        Fee[]
+
+  @@index([tokenAddress])
+  @@index([userId])
+  @@index([depositAddressId])
+}
+
+model Recipient {
+  id             String       @id @default(cuid())
+  walletAddress  String
+  amount         Float
+  createdAt      DateTime     @default(now())
+  deletedAt      DateTime?
+  distributionId String
+  distribution   Distribution @relation(fields: [distributionId], references: [id])
+  transactionId  String?
+  transaction    Transaction? @relation(fields: [transactionId], references: [id])
+
+  @@index([walletAddress])
+  @@index([distributionId])
+  @@index([transactionId])
+}
+
+model Transaction {
+  id             String       @id @default(cuid())
+  signature      String       @unique
+  status         TransactionStatus @default(PENDING)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  deletedAt      DateTime?
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  distributionId String
+  distribution   Distribution @relation(fields: [distributionId], references: [id])
+  recipients     Recipient[]
+
+  @@index([signature])
+  @@index([userId])
+  @@index([distributionId])
+}
+
+model Fee {
+  id             String   @id @default(cuid())
+  amount         Float
+  type           FeeType
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  deletedAt      DateTime?
+  distributionId String
+  distribution   Distribution @relation(fields: [distributionId], references: [id])
+
+  @@index([distributionId])
+}
+
+model DepositAddress {
+  id             String      @id @default(cuid())
+  userId         String
+  user           User        @relation(fields: [userId], references: [id])
+  address        String      @unique
+  derivationPath String
+  status         DepositAddressStatus @default(ACTIVE)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  deletedAt      DateTime?
+
+  distributions  Distribution[]
+
+  @@index([userId])
+  @@index([address])
+}
+
+enum DistributionStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+enum TransactionStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+}
+
+enum FeeType {
+  NETWORK
+  PLATFORM
+  CUSTOM
+}
+
+enum DepositAddressStatus {
+  ACTIVE
+  USED
+  ARCHIVED
 }
