@@ -21,21 +21,24 @@ export default function DistributionFlow() {
     const [formData, setFormData] = useState<DistributionFormData>({
         tokenAddress: '',
         tokenName: '',
-        fundingAmount: 0,
         recipients: [],
     });
     const [isDistributing, setIsDistributing] = useState(false);
     const [distributionProgress, setDistributionProgress] = useState(0);
     const [distributionReport, setDistributionReport] = useState<string | null>(null);
+    const [isDistributionCreated, setIsDistributionCreated] = useState(false);
 
     const handleNext = () => {
         if (currentStep < steps.length - 1) {
             setCurrentStep(currentStep + 1);
+            if (currentStep === 0) {
+                setIsDistributionCreated(true);
+            }
         }
     };
 
     const handleBack = () => {
-        if (currentStep > 0) {
+        if (currentStep > 0 && !isDistributionCreated) {
             setCurrentStep(currentStep - 1);
         }
     };
@@ -92,7 +95,7 @@ ${data.recipients.map(r => `${r.address}: ${r.amount}`).join('\n')}`;
     const renderStep = () => {
         switch (currentStep) {
             case 0:
-                return <CreateStep formData={formData} onChange={handleFormChange} />;
+                return <CreateStep formData={formData} onChange={handleFormChange} onNext={handleNext} />;
             case 1:
                 return <RecipientsStep formData={formData} onChange={handleFormChange} />;
             case 2:
@@ -133,16 +136,18 @@ ${data.recipients.map(r => `${r.address}: ${r.amount}`).join('\n')}`;
 
                 {currentStep < 3 && (
                     <div className="mt-12 flex justify-between">
-                        <button
-                            onClick={handleBack}
-                            disabled={currentStep === 0}
-                            className={`px-6 py-3 text-sm font-medium rounded-lg ${currentStep === 0
-                                ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
-                                : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                                }`}
-                        >
-                            Back
-                        </button>
+                        {!isDistributionCreated && (
+                            <button
+                                onClick={handleBack}
+                                disabled={currentStep === 0}
+                                className={`px-6 py-3 text-sm font-medium rounded-lg ${currentStep === 0
+                                    ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                                    : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                    }`}
+                            >
+                                Back
+                            </button>
+                        )}
                         {currentStep === 2 ? (
                             <button
                                 onClick={handleSubmit}
@@ -151,7 +156,7 @@ ${data.recipients.map(r => `${r.address}: ${r.amount}`).join('\n')}`;
                             >
                                 Submit Distribution
                             </button>
-                        ) : (
+                        ) : currentStep !== 0 && (
                             <button
                                 onClick={handleNext}
                                 className="px-6 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"

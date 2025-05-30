@@ -7,6 +7,7 @@ export interface DistributionFormData {
     tokenAddress: string;
     tokenName: string;
     recipients: Recipient[];
+    depositAddressId?: string;
 }
 
 export type DistributionStep =

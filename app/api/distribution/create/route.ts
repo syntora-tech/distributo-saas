@@ -62,8 +62,17 @@ export async function POST(request: NextRequest) {
                 depositAddressId: savedAddress.id,
                 status: 'PENDING'
             },
-            include: {
-                depositAddress: true
+            select: {
+                id: true,
+                name: true,
+                tokenAddress: true,
+                status: true,
+                depositAddress: {
+                    select: {
+                        id: true,
+                        address: true
+                    }
+                }
             }
         });
 
