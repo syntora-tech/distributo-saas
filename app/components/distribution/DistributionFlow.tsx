@@ -75,6 +75,11 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
     const [distributionReport, setDistributionReport] = useState<string | null>(initialState.distributionReport);
     const [isDistributionCreated, setIsDistributionCreated] = useState(initialState.isDistributionCreated);
 
+    // Скрол вгору при зміні кроку
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [currentStep]);
+
     // Save to localStorage when state changes
     useEffect(() => {
         if (initialData) {
@@ -103,11 +108,8 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
     };
 
     const handleBack = () => {
-        if (currentStep > 0 && !isDistributionCreated) {
-            setCurrentStep(prev => {
-                const newStep = prev - 1;
-                return newStep;
-            });
+        if (currentStep > 1 || !isDistributionCreated) {
+            setCurrentStep(prev => prev - 1);
         }
     };
 
@@ -199,15 +201,11 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
                 {renderStep()}
 
                 {currentStep < 3 && (
-                    <div className="mt-12 flex justify-between">
-                        {(currentStep === 2 || !isDistributionCreated) && (
+                    <div className="mt-12 flex justify-end space-x-4">
+                        {(currentStep > 1 || !isDistributionCreated) && (
                             <button
                                 onClick={handleBack}
-                                disabled={currentStep === 0}
-                                className={`px-6 py-3 text-sm font-medium rounded-lg ${currentStep === 0
-                                    ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
-                                    : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                                    }`}
+                                className="px-6 py-3 text-sm font-medium bg-white text-gray-700 border-2 border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50"
                             >
                                 Back
                             </button>
@@ -220,7 +218,7 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
                             >
                                 Submit Distribution
                             </button>
-                        ) : currentStep !== 0 && (
+                        ) : (
                             <button
                                 onClick={handleNext}
                                 className="px-6 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
