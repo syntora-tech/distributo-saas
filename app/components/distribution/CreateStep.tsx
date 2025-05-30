@@ -62,6 +62,18 @@ export default function CreateStep({ formData, onChange, onNext }: CreateStepPro
 
             const distribution = await response.json();
             onChange({ depositAddressId: distribution.depositAddress.id });
+            // Зберігаємо дані з новим id в localStorage
+            localStorage.setItem(`distribution_${distribution.id}`, JSON.stringify({
+                currentStep: 1,
+                formData: {
+                    ...formData,
+                    depositAddressId: distribution.depositAddress.id
+                },
+                isDistributing: false,
+                distributionProgress: 0,
+                distributionReport: null,
+                isDistributionCreated: true
+            }));
             onNext();
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to create distribution');

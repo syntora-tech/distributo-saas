@@ -4,6 +4,7 @@ import { sign } from 'tweetnacl';
 import { Network } from '@/lib/blockchain/network';
 import { generateDepositAddress } from '@/lib/blockchain/deposit';
 import { z } from 'zod';
+import { createHash } from 'crypto';
 
 const prisma = new PrismaClient();
 
@@ -67,17 +68,37 @@ export async function POST(request: NextRequest) {
             user = await prisma.user.create({ data: { walletAddress } });
         }
 
+        // Генеруємо унікальний індекс користувача через хеш
+        const userIndexHash = createHash('sha256').update(user.id).digest();
+        const userIndex = userIndexHash.readUInt32BE(0) & 0x7FFFFFFF; // Обмежуємо до 2^31-1
+
+        // Знаходимо останній адрес тільки для цього користувача
         const lastAddress = await prisma.depositAddress.findFirst({
-            where: { userId: user.id },
+            where: {
+                userId: user.id,
+                status: 'ACTIVE'
+            },
             orderBy: { createdAt: 'desc' }
         });
-        const index = lastAddress ? parseInt(lastAddress.derivationPath.split('/')[3]) + 1 : 0;
+
+        // Індекс адреси в контексті користувача
+        const addressIndex = lastAddress
+            ? parseInt(lastAddress.derivationPath.split('/')[4]) + 1
+            : 0;
+
+        console.log('Generated indices:', {
+            userId: user.id,
+            walletAddress: user.walletAddress,
+            userIndex,
+            addressIndex,
+            lastAddressPath: lastAddress?.derivationPath
+        });
 
         const mnemonic = process.env.MNEMONIC;
         if (!mnemonic) {
             throw new Error('MNEMONIC is not set in environment variables');
         }
-        const depositAddress = generateDepositAddress(mnemonic, user.id, index);
+        const depositAddress = generateDepositAddress(mnemonic, userIndex, addressIndex);
 
         const savedAddress = await prisma.depositAddress.create({
             data: {

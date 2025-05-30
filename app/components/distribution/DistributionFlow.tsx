@@ -23,27 +23,29 @@ interface DistributionFlowProps {
 export default function DistributionFlow({ initialData }: DistributionFlowProps) {
     // Load initial state from localStorage or use defaults
     const loadInitialState = () => {
-        const key = initialData ? `distribution_${initialData.id}` : 'distribution_draft';
-        const savedData = localStorage.getItem(key);
+        if (initialData) {
+            const key = `distribution_${initialData.id}`;
+            const savedData = localStorage.getItem(key);
 
-        if (savedData) {
-            const {
-                currentStep: savedStep,
-                formData: savedFormData,
-                isDistributing: savedIsDistributing,
-                distributionProgress: savedProgressValue,
-                distributionReport: savedReport,
-                isDistributionCreated: savedIsCreated,
-            } = JSON.parse(savedData);
+            if (savedData) {
+                const {
+                    currentStep: savedStep,
+                    formData: savedFormData,
+                    isDistributing: savedIsDistributing,
+                    distributionProgress: savedProgressValue,
+                    distributionReport: savedReport,
+                    isDistributionCreated: savedIsCreated,
+                } = JSON.parse(savedData);
 
-            return {
-                currentStep: savedStep,
-                formData: savedFormData,
-                isDistributing: savedIsDistributing,
-                distributionProgress: savedProgressValue,
-                distributionReport: savedReport,
-                isDistributionCreated: savedIsCreated,
-            };
+                return {
+                    currentStep: savedStep,
+                    formData: savedFormData,
+                    isDistributing: savedIsDistributing,
+                    distributionProgress: savedProgressValue,
+                    distributionReport: savedReport,
+                    isDistributionCreated: savedIsCreated,
+                };
+            }
         }
 
         return {
@@ -75,15 +77,17 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
 
     // Save to localStorage when state changes
     useEffect(() => {
-        const key = initialData ? `distribution_${initialData.id}` : 'distribution_draft';
-        localStorage.setItem(key, JSON.stringify({
-            currentStep,
-            formData,
-            isDistributing,
-            distributionProgress,
-            distributionReport,
-            isDistributionCreated,
-        }));
+        if (initialData) {
+            const key = `distribution_${initialData.id}`;
+            localStorage.setItem(key, JSON.stringify({
+                currentStep,
+                formData,
+                isDistributing,
+                distributionProgress,
+                distributionReport,
+                isDistributionCreated,
+            }));
+        }
     }, [currentStep, formData, isDistributing, distributionProgress, distributionReport, isDistributionCreated, initialData]);
 
     const handleNext = () => {
