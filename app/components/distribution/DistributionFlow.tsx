@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { DistributionFormData } from '../../types/distribution';
+import { useState, useEffect } from 'react';
+import { Distribution, DistributionFormData } from '../../types/distribution';
 import CreateStep from './CreateStep';
 import RecipientsStep from './RecipientsStep';
 import ReviewStep from './ReviewStep';
@@ -16,80 +16,125 @@ const steps = [
     { id: 'complete', name: 'Complete' },
 ];
 
-export default function DistributionFlow() {
-    const [currentStep, setCurrentStep] = useState(0);
-    const [formData, setFormData] = useState<DistributionFormData>({
-        tokenAddress: '',
-        tokenName: '',
-        recipients: [],
-    });
-    const [isDistributing, setIsDistributing] = useState(false);
-    const [distributionProgress, setDistributionProgress] = useState(0);
-    const [distributionReport, setDistributionReport] = useState<string | null>(null);
-    const [isDistributionCreated, setIsDistributionCreated] = useState(false);
+interface DistributionFlowProps {
+    initialData?: Distribution;
+}
+
+export default function DistributionFlow({ initialData }: DistributionFlowProps) {
+    // Load initial state from localStorage or use defaults
+    const loadInitialState = () => {
+        const key = initialData ? `distribution_${initialData.id}` : 'distribution_draft';
+        const savedData = localStorage.getItem(key);
+
+        if (savedData) {
+            const {
+                currentStep: savedStep,
+                formData: savedFormData,
+                isDistributing: savedIsDistributing,
+                distributionProgress: savedProgressValue,
+                distributionReport: savedReport,
+                isDistributionCreated: savedIsCreated,
+            } = JSON.parse(savedData);
+
+            return {
+                currentStep: savedStep,
+                formData: savedFormData,
+                isDistributing: savedIsDistributing,
+                distributionProgress: savedProgressValue,
+                distributionReport: savedReport,
+                isDistributionCreated: savedIsCreated,
+            };
+        }
+
+        return {
+            currentStep: initialData ? 1 : 0,
+            formData: initialData ? {
+                tokenAddress: initialData.tokenAddress,
+                tokenName: initialData.name,
+                recipients: initialData.recipients || [],
+                depositAddressId: initialData.depositAddressId,
+            } : {
+                tokenAddress: '',
+                tokenName: '',
+                recipients: [],
+            },
+            isDistributing: false,
+            distributionProgress: 0,
+            distributionReport: null,
+            isDistributionCreated: !!initialData,
+        };
+    };
+
+    const initialState = loadInitialState();
+    const [currentStep, setCurrentStep] = useState(initialState.currentStep);
+    const [formData, setFormData] = useState<DistributionFormData>(initialState.formData);
+    const [isDistributing, setIsDistributing] = useState(initialState.isDistributing);
+    const [distributionProgress, setDistributionProgress] = useState(initialState.distributionProgress);
+    const [distributionReport, setDistributionReport] = useState<string | null>(initialState.distributionReport);
+    const [isDistributionCreated, setIsDistributionCreated] = useState(initialState.isDistributionCreated);
+
+    // Save to localStorage when state changes
+    useEffect(() => {
+        const key = initialData ? `distribution_${initialData.id}` : 'distribution_draft';
+        localStorage.setItem(key, JSON.stringify({
+            currentStep,
+            formData,
+            isDistributing,
+            distributionProgress,
+            distributionReport,
+            isDistributionCreated,
+        }));
+    }, [currentStep, formData, isDistributing, distributionProgress, distributionReport, isDistributionCreated, initialData]);
 
     const handleNext = () => {
         if (currentStep < steps.length - 1) {
-            setCurrentStep(currentStep + 1);
-            if (currentStep === 0) {
-                setIsDistributionCreated(true);
-            }
+            setCurrentStep(prev => {
+                const newStep = prev + 1;
+                if (prev === 0) {
+                    setIsDistributionCreated(true);
+                }
+                return newStep;
+            });
         }
     };
 
     const handleBack = () => {
         if (currentStep > 0 && !isDistributionCreated) {
-            setCurrentStep(currentStep - 1);
+            setCurrentStep(prev => {
+                const newStep = prev - 1;
+                return newStep;
+            });
         }
+    };
+
+    const handleFormChange = (data: Partial<DistributionFormData>) => {
+        setFormData(prev => ({
+            ...prev,
+            ...data
+        }));
     };
 
     const handleSubmit = async () => {
         setIsDistributing(true);
-        setCurrentStep(3); // Move to distribution step
-
-        // Simulate distribution process
-        for (let i = 0; i <= 100; i += 10) {
-            await new Promise(resolve => setTimeout(resolve, 500));
-            setDistributionProgress(i);
+        try {
+            // TODO: Implement distribution submission
+            console.log('Submitting distribution:', formData);
+            // Simulate progress
+            for (let i = 0; i <= 100; i += 10) {
+                await new Promise(resolve => setTimeout(resolve, 500));
+                setDistributionProgress(i);
+            }
+            handleNext();
+        } catch (error) {
+            console.error('Error submitting distribution:', error);
+        } finally {
+            setIsDistributing(false);
         }
-
-        // Generate report
-        const report = generateDistributionReport(formData);
-        setDistributionReport(report);
-        setIsDistributing(false);
-        setCurrentStep(4); // Move to complete step
-    };
-
-    const generateDistributionReport = (data: DistributionFormData) => {
-        const timestamp = new Date().toISOString();
-        const totalAmount = data.recipients.reduce((sum, r) => sum + r.amount, 0);
-
-        return `Distribution Report
-Date: ${timestamp}
-Token: ${data.tokenName} (${data.tokenAddress})
-Total Recipients: ${data.recipients.length}
-Total Amount: ${totalAmount}
-
-Recipients:
-${data.recipients.map(r => `${r.address}: ${r.amount}`).join('\n')}`;
     };
 
     const handleDownloadReport = () => {
-        if (!distributionReport) return;
-
-        const blob = new Blob([distributionReport], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `distribution-report-${new Date().toISOString()}.txt`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    };
-
-    const handleFormChange = (data: Partial<DistributionFormData>) => {
-        setFormData(prev => ({ ...prev, ...data }));
+        // TODO: Implement report download
+        console.log('Downloading report');
     };
 
     const renderStep = () => {
@@ -111,6 +156,21 @@ ${data.recipients.map(r => `${r.address}: ${r.amount}`).join('\n')}`;
 
     return (
         <div className="max-w-4xl mx-auto">
+            {initialData && (
+                <div className="mb-8 bg-white shadow-sm rounded-xl p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h3 className="text-sm font-medium text-gray-500">Distribution Name</h3>
+                            <p className="mt-1 text-lg font-semibold text-gray-900">{formData.tokenName}</p>
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-medium text-gray-500">Token Address</h3>
+                            <p className="mt-1 font-mono text-sm text-gray-900 break-all">{formData.tokenAddress}</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <nav aria-label="Progress" className="mb-12">
                 <ol role="list" className="space-y-4 md:flex md:space-x-8 md:space-y-0">
                     {steps.map((step, index) => (
@@ -136,7 +196,7 @@ ${data.recipients.map(r => `${r.address}: ${r.amount}`).join('\n')}`;
 
                 {currentStep < 3 && (
                     <div className="mt-12 flex justify-between">
-                        {!isDistributionCreated && (
+                        {(currentStep === 2 || !isDistributionCreated) && (
                             <button
                                 onClick={handleBack}
                                 disabled={currentStep === 0}

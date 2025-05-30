@@ -3,24 +3,58 @@ import { PrismaClient } from '@prisma/client';
 import { sign } from 'tweetnacl';
 import { Network } from '@/lib/blockchain/network';
 import { generateDepositAddress } from '@/lib/blockchain/deposit';
+import { z } from 'zod';
 
 const prisma = new PrismaClient();
+
+// Validation schema for create distribution request
+const createDistributionSchema = z.object({
+    name: z.string().min(1, 'Name is required'),
+    tokenAddress: z.string().min(1, 'Token address is required'),
+    walletAddress: z.string().min(1, 'Wallet address is required'),
+    network: z.nativeEnum(Network),
+    signature: z.string().optional(),
+    message: z.string().optional(),
+}).refine(data => {
+    if (data.network !== Network.SOLANA_DEVNET) {
+        return !!data.signature && !!data.message;
+    }
+    return true;
+}, {
+    message: 'Signature and message are required for non-devnet networks'
+});
 
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { name, tokenAddress, walletAddress, signature, message, network } = body;
 
-        if (!name || !tokenAddress || !walletAddress || !network) {
-            return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400 });
+        // Check if body exists
+        if (!body) {
+            return new Response(JSON.stringify({
+                error: 'Request body is required'
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            });
         }
 
+        // Validate request body
+        const validationResult = createDistributionSchema.safeParse(body);
+        if (!validationResult.success) {
+            return new Response(JSON.stringify({
+                error: 'Invalid request data',
+                details: validationResult.error.errors
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        const { name, tokenAddress, walletAddress, signature, message, network } = validationResult.data;
+
         if (network !== Network.SOLANA_DEVNET) {
-            if (!signature || !message) {
-                return new Response(JSON.stringify({ error: 'Missing signature or message' }), { status: 400 });
-            }
             const messageBytes = new TextEncoder().encode(message);
-            const signatureBytes = new Uint8Array(signature.split(',').map(Number));
+            const signatureBytes = new Uint8Array(signature!.split(',').map(Number));
             const publicKeyBytes = new Uint8Array(walletAddress.split(',').map(Number));
             const isValid = sign.detached.verify(messageBytes, signatureBytes, publicKeyBytes);
             if (!isValid) {
@@ -78,6 +112,7 @@ export async function POST(request: NextRequest) {
 
         return new Response(JSON.stringify(distribution), { status: 201 });
     } catch (error) {
+        console.error('Error creating distribution:', error);
         return new Response(JSON.stringify({ error: 'Failed to create distribution' }), { status: 500 });
     }
 } 

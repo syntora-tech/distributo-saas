@@ -7,7 +7,6 @@ import Logo from './components/Logo';
 
 export default function Header() {
   const pathname = usePathname();
-  const isDistributionPage = pathname === '/distribution';
 
   return (
     <header className="bg-white shadow-sm">
@@ -18,10 +17,31 @@ export default function Header() {
 
         <div className="flex items-center space-x-4">
           <Link
-            href={isDistributionPage ? "/" : "/distribution"}
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+            href="/"
+            className={`px-4 py-2 rounded-lg transition ${pathname === '/'
+                ? 'bg-gray-100 text-gray-900'
+                : 'text-gray-600 hover:text-gray-900'
+              }`}
           >
-            {isDistributionPage ? "Go to Calculator" : "Start Distribution"}
+            Calculator
+          </Link>
+          <Link
+            href="/distributions"
+            className={`px-4 py-2 rounded-lg transition ${pathname === '/distributions'
+                ? 'bg-gray-100 text-gray-900'
+                : 'text-gray-600 hover:text-gray-900'
+              }`}
+          >
+            Distributions
+          </Link>
+          <Link
+            href="/distribution"
+            className={`px-4 py-2 rounded-lg transition ${pathname === '/distribution'
+                ? 'bg-blue-500 text-white'
+                : 'bg-blue-500/10 text-blue-600 hover:bg-blue-500/20'
+              }`}
+          >
+            New Distribution
           </Link>
           <WalletButton />
         </div>

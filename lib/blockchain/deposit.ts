@@ -10,8 +10,10 @@ export interface DepositAddress {
 }
 
 function getUserIdIndex(userId: string): number {
+    // Надійно отримуємо hardened індекс з UUID/userId через sha256
     const hash = createHash('sha256').update(userId).digest();
-    return hash.readUInt32BE(0);
+    // uint32, обмеження до 2^31-1 (hardened BIP32)
+    return hash.readUInt32BE(0) & 0x7FFFFFFF;
 }
 
 export function generateDepositAddress(
