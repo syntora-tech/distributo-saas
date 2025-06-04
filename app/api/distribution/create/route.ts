@@ -1,12 +1,11 @@
 import { NextRequest } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { sign } from 'tweetnacl';
 import { Network } from '@/lib/blockchain/network';
 import { generateDepositAddress } from '@/lib/blockchain/deposit';
 import { z } from 'zod';
 import { createHash } from 'crypto';
 
-const prisma = new PrismaClient();
 
 // Validation schema for create distribution request
 const createDistributionSchema = z.object({
