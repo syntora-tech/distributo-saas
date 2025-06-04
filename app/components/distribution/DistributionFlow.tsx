@@ -7,11 +7,13 @@ import RecipientsStep from './RecipientsStep';
 import ReviewStep from './ReviewStep';
 import DistributionStep from './DistributionStep';
 import CompleteStep from './CompleteStep';
+import DepositStep from './DepositStep';
 
 const steps = [
     { id: 'create', name: 'Create Distribution' },
     { id: 'recipients', name: 'Add Recipients' },
     { id: 'review', name: 'Review' },
+    { id: 'deposit', name: 'Deposit Funds' },
     { id: 'distribution', name: 'Distribution' },
     { id: 'complete', name: 'Complete' },
 ];
@@ -123,13 +125,22 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
     const handleSubmit = async () => {
         setIsDistributing(true);
         try {
-            // TODO: Implement distribution submission
-            console.log('Submitting distribution:', formData);
-            // Simulate progress
-            for (let i = 0; i <= 100; i += 10) {
-                await new Promise(resolve => setTimeout(resolve, 500));
-                setDistributionProgress(i);
+            const response = await fetch('/api/distribution/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    distributionId: initialData?.id,
+                    formData,
+                }),
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || 'Failed to submit distribution');
             }
+
             handleNext();
         } catch (error) {
             console.error('Error submitting distribution:', error);
@@ -152,8 +163,10 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
             case 2:
                 return <ReviewStep formData={formData} />;
             case 3:
-                return <DistributionStep progress={distributionProgress} />;
+                return <DepositStep formData={formData} onNext={handleNext} />;
             case 4:
+                return <DistributionStep progress={distributionProgress} />;
+            case 5:
                 return <CompleteStep onDownloadReport={handleDownloadReport} />;
             default:
                 return null;
@@ -200,7 +213,7 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
             <div className="bg-white shadow-sm rounded-xl p-8">
                 {renderStep()}
 
-                {currentStep < 3 && (
+                {currentStep < 4 && (
                     <div className="mt-12 flex justify-end space-x-4">
                         {(currentStep > 1 || !isDistributionCreated) && (
                             <button
@@ -210,13 +223,23 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
                                 Back
                             </button>
                         )}
-                        {currentStep === 2 ? (
+                        {currentStep === 3 ? (
                             <button
                                 onClick={handleSubmit}
                                 disabled={isDistributing}
                                 className="px-6 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                Submit Distribution
+                                {isDistributing ? (
+                                    <div className="flex items-center">
+                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Submitting...
+                                    </div>
+                                ) : (
+                                    'Submit Distribution'
+                                )}
                             </button>
                         ) : (
                             <button
