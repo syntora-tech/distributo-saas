@@ -1,8 +1,6 @@
 import { NextRequest } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { z } from 'zod';
-
-const prisma = new PrismaClient();
 
 // Validation schema for wallet address
 const walletAddressSchema = z.string().min(1, 'Wallet address is required');
