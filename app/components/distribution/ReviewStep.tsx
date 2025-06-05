@@ -8,16 +8,19 @@ import { Network } from '@/lib/blockchain/network';
 import { TransactionSpeedSelector } from './TransactionSpeedSelector';
 import { TransactionSpeed } from '@/types/distribution';
 import { NETWORK_TOKENS } from '@/lib/blockchain/config';
+import { CalculationData } from './TransactionSpeedSelector';
 
 interface ReviewStepProps {
     formData: DistributionFormData;
-    onSpeedChange?: (speed: TransactionSpeed) => void;
+    txSettings: CalculationData | null;
+    onTxSettingsChange?: (data: CalculationData) => void;
     networkToken?: keyof typeof NETWORK_TOKENS;
 }
 
 export default function ReviewStep({
     formData,
-    onSpeedChange,
+    txSettings,
+    onTxSettingsChange,
     networkToken = 'SOL'
 }: ReviewStepProps) {
     const { distribution, recipients } = useDistribution();
@@ -54,8 +57,9 @@ export default function ReviewStep({
                     <p className="text-sm text-gray-500 mb-2">Transaction Speed</p>
                     <TransactionSpeedSelector
                         recipients={formData.recipients}
-                        onSpeedChange={onSpeedChange || (() => { })}
+                        onTxSettingsChange={onTxSettingsChange || (() => { })}
                         networkToken={networkToken}
+                        initialSpeed={txSettings?.speed || TransactionSpeed.MEDIUM}
                     />
                 </div>
 

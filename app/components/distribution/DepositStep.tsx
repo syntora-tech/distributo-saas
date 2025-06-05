@@ -1,26 +1,29 @@
-import { useState, useEffect } from 'react';
 import { DistributionFormData } from '../../types/distribution';
 import { DepositBlock } from '../DepositBlock';
+import { useDistribution } from '@/hooks/useDistribution';
+import { CalculationData } from './TransactionSpeedSelector';
 
 interface DepositStepProps {
     formData: DistributionFormData;
     onNext: () => void;
+    txSettings: CalculationData | null;
 }
 
-export default function DepositStep({ formData, onNext }: DepositStepProps) {
-    const [isLoading, setIsLoading] = useState(false);
+export default function DepositStep({ formData, onNext, txSettings }: DepositStepProps) {
+    const { distribution } = useDistribution();
 
     const handleDeposit = async () => {
-        setIsLoading(true);
         try {
             // TODO: Implement deposit logic
             onNext();
         } catch (error) {
             console.error('Error depositing:', error);
-        } finally {
-            setIsLoading(false);
         }
     };
+
+    if (!distribution) return null;
+
+    const totalSplAmount = formData.recipients.reduce((sum, r) => sum + r.amount, 0);
 
     return (
         <div className="space-y-8">
@@ -29,9 +32,9 @@ export default function DepositStep({ formData, onNext }: DepositStepProps) {
             <div className="bg-white border-2 border-gray-100 rounded-xl p-8">
                 <DepositBlock
                     splTokenAddress={formData.tokenAddress}
-                    depositAddress={formData.depositAddressId || ''}
-                    solAmount={0}
-                    splAmount={formData.recipients.reduce((sum, r) => sum + r.amount, 0)}
+                    depositAddress={distribution.depositAddress.address}
+                    solAmount={txSettings?.fees.total ? parseFloat(txSettings.fees.total) : 0}
+                    splAmount={totalSplAmount}
                     onDepositComplete={handleDeposit}
                 />
             </div>

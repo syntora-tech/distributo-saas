@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { Distribution, DistributionFormData } from '../../types/distribution';
+import { TransactionSpeed } from '@/types/distribution';
 import CreateStep from './CreateStep';
 import RecipientsStep from './RecipientsStep';
 import ReviewStep from './ReviewStep';
 import DistributionStep from './DistributionStep';
 import CompleteStep from './CompleteStep';
 import DepositStep from './DepositStep';
+import { CalculationData } from './TransactionSpeedSelector';
 
 const steps = [
     { id: 'create', name: 'Create Distribution' },
@@ -37,6 +39,7 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
                     distributionProgress: savedProgressValue,
                     distributionReport: savedReport,
                     isDistributionCreated: savedIsCreated,
+                    txSettings: savedTxSettings,
                 } = JSON.parse(savedData);
 
                 return {
@@ -46,6 +49,7 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
                     distributionProgress: savedProgressValue,
                     distributionReport: savedReport,
                     isDistributionCreated: savedIsCreated,
+                    txSettings: savedTxSettings,
                 };
             }
         }
@@ -66,6 +70,7 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
             distributionProgress: 0,
             distributionReport: null,
             isDistributionCreated: !!initialData,
+            txSettings: null,
         };
     };
 
@@ -76,6 +81,7 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
     const [distributionProgress, setDistributionProgress] = useState(initialState.distributionProgress);
     const [distributionReport, setDistributionReport] = useState<string | null>(initialState.distributionReport);
     const [isDistributionCreated, setIsDistributionCreated] = useState(initialState.isDistributionCreated);
+    const [txSettings, setTxSettings] = useState<CalculationData | null>(initialState.txSettings);
 
     // Скрол вгору при зміні кроку
     useEffect(() => {
@@ -93,13 +99,14 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
                 distributionProgress,
                 distributionReport,
                 isDistributionCreated,
+                txSettings,
             }));
         }
-    }, [currentStep, formData, isDistributing, distributionProgress, distributionReport, isDistributionCreated, initialData]);
+    }, [currentStep, formData, isDistributing, distributionProgress, distributionReport, isDistributionCreated, txSettings, initialData]);
 
     const handleNext = () => {
         if (currentStep < steps.length - 1) {
-            setCurrentStep(prev => {
+            setCurrentStep((prev: number) => {
                 const newStep = prev + 1;
                 if (prev === 0) {
                     setIsDistributionCreated(true);
@@ -111,7 +118,7 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
 
     const handleBack = () => {
         if (currentStep > 1 || !isDistributionCreated) {
-            setCurrentStep(prev => prev - 1);
+            setCurrentStep((prev: number) => prev - 1);
         }
     };
 
@@ -154,6 +161,10 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
         console.log('Downloading report');
     };
 
+    const handleTxSettingsChange = (txSettings: CalculationData) => {
+        setTxSettings(txSettings);
+    };
+
     const renderStep = () => {
         switch (currentStep) {
             case 0:
@@ -161,9 +172,9 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
             case 1:
                 return <RecipientsStep formData={formData} onChange={handleFormChange} />;
             case 2:
-                return <ReviewStep formData={formData} />;
+                return <ReviewStep formData={formData} txSettings={txSettings} onTxSettingsChange={handleTxSettingsChange} />;
             case 3:
-                return <DepositStep formData={formData} onNext={handleNext} />;
+                return <DepositStep formData={formData} txSettings={txSettings} onNext={handleNext} />;
             case 4:
                 return <DistributionStep progress={distributionProgress} />;
             case 5:

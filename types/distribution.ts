@@ -1,4 +1,8 @@
-export type TransactionSpeed = 'slow' | 'medium' | 'fast';
+export enum TransactionSpeed {
+    SLOW = 'slow',
+    MEDIUM = 'medium',
+    FAST = 'fast'
+}
 
 export interface DistributionRecipient {
     address: string;

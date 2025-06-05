@@ -2,27 +2,32 @@ import { useState, useEffect } from 'react';
 import { TransactionSpeed } from '@/types/distribution';
 import { NETWORK_TOKENS } from '@/lib/blockchain/config';
 
+export interface CalculationData {
+    totalTransactions: number;
+    speed: TransactionSpeed;
+    fees: {
+        networkFee: string;
+        serviceFee: string;
+        total: string;
+    };
+    estimatedTime: string;
+}
+
 interface TransactionSpeedSelectorProps {
     recipients: { address: string; amount: number }[];
-    onSpeedChange: (speed: TransactionSpeed) => void;
+    onTxSettingsChange: (data: CalculationData) => void;
+    initialSpeed: TransactionSpeed;
     networkToken?: keyof typeof NETWORK_TOKENS;
 }
 
 export function TransactionSpeedSelector({
     recipients,
-    onSpeedChange,
+    onTxSettingsChange,
+    initialSpeed,
     networkToken = 'SOL'
 }: TransactionSpeedSelectorProps) {
-    const [selectedSpeed, setSelectedSpeed] = useState<TransactionSpeed>('medium');
-    const [calculation, setCalculation] = useState<{
-        totalTransactions: number;
-        fees: {
-            networkFee: string;
-            serviceFee: string;
-            total: string;
-        };
-        estimatedTime: string;
-    } | null>(null);
+    const [selectedSpeed, setSelectedSpeed] = useState<TransactionSpeed>(initialSpeed);
+    const [calculation, setCalculation] = useState<CalculationData | null>(null);
 
     const calculateFees = async (speed: TransactionSpeed) => {
         try {
@@ -45,17 +50,25 @@ export function TransactionSpeedSelector({
             }
 
             const data = await response.json();
-            setCalculation(data);
+            setCalculation({
+                ...data,
+                speed
+            });
         } catch (error) {
             console.error('Error calculating fees:', error);
         }
     };
 
-    const handleSpeedChange = async (speed: TransactionSpeed) => {
+    const handleTxSettingsChange = async (speed: TransactionSpeed) => {
         setSelectedSpeed(speed);
-        onSpeedChange(speed);
         await calculateFees(speed);
     };
+
+    useEffect(() => {
+        if (calculation) {
+            onTxSettingsChange(calculation);
+        }
+    }, [calculation]);
 
     useEffect(() => {
         calculateFees(selectedSpeed);
@@ -66,10 +79,10 @@ export function TransactionSpeedSelector({
     return (
         <div className="space-y-4">
             <div className="flex gap-4">
-                {(['slow', 'medium', 'fast'] as const).map((speed) => (
+                {Object.values(TransactionSpeed).map((speed) => (
                     <button
                         key={speed}
-                        onClick={() => handleSpeedChange(speed)}
+                        onClick={() => handleTxSettingsChange(speed)}
                         className={`px-4 py-2 rounded-lg border ${selectedSpeed === speed
                             ? 'bg-blue-500 text-white border-blue-500'
                             : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'

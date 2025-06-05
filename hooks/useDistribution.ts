@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { DistributionFormData } from '@/types/distribution';
+import { DistributionFormData } from '@/app/types/distribution';
 import useSWR from 'swr';
 
 interface Recipient {
@@ -10,6 +10,10 @@ interface Recipient {
 interface Distribution {
     tokenAddress: string;
     tokenName: string;
+    depositAddress: {
+        id: string;
+        address: string;
+    };
 }
 
 const fetcher = async (url: string) => {
@@ -39,7 +43,8 @@ export function useDistribution(storageKey?: string) {
                 const { formData } = JSON.parse(savedData);
                 setDistribution({
                     tokenAddress: formData.tokenAddress,
-                    tokenName: formData.tokenName || 'Unknown Token'
+                    tokenName: formData.tokenName || 'Unknown Token',
+                    depositAddress: formData.depositAddress || { id: '', address: '' }
                 });
                 setRecipients(formData.recipients);
             }
