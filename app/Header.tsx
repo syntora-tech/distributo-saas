@@ -4,9 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import WalletButton from './components/WalletButton';
 import Logo from './components/Logo';
+import { useConnection } from '@solana/wallet-adapter-react';
 
 export default function Header() {
   const pathname = usePathname();
+  const { connection } = useConnection();
 
   return (
     <header className="bg-white shadow-sm">
@@ -16,11 +18,14 @@ export default function Header() {
         </Link>
 
         <div className="flex items-center space-x-4">
+          <div className="text-sm text-gray-600 font-medium">
+            {connection.rpcEndpoint.includes('devnet') ? 'Devnet' : 'Mainnet'}
+          </div>
           <Link
             href="/"
             className={`px-4 py-2 rounded-lg transition ${pathname === '/'
-                ? 'bg-gray-100 text-gray-900'
-                : 'text-gray-600 hover:text-gray-900'
+              ? 'bg-gray-100 text-gray-900'
+              : 'text-gray-600 hover:text-gray-900'
               }`}
           >
             Calculator
@@ -28,8 +33,8 @@ export default function Header() {
           <Link
             href="/distributions"
             className={`px-4 py-2 rounded-lg transition ${pathname === '/distributions'
-                ? 'bg-gray-100 text-gray-900'
-                : 'text-gray-600 hover:text-gray-900'
+              ? 'bg-gray-100 text-gray-900'
+              : 'text-gray-600 hover:text-gray-900'
               }`}
           >
             Distributions
@@ -37,8 +42,8 @@ export default function Header() {
           <Link
             href="/distribution"
             className={`px-4 py-2 rounded-lg transition ${pathname === '/distribution'
-                ? 'bg-blue-500 text-white'
-                : 'bg-blue-500/10 text-blue-600 hover:bg-blue-500/20'
+              ? 'bg-blue-500 text-white'
+              : 'bg-blue-500/10 text-blue-600 hover:bg-blue-500/20'
               }`}
           >
             New Distribution
