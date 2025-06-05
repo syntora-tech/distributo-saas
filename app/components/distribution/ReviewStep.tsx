@@ -37,7 +37,7 @@ export default function ReviewStep({
                         <p className="font-mono text-sm text-gray-900">{distribution.tokenAddress}</p>
                     </div>
                     <div>
-                        <p className="text-sm text-gray-500 mb-1">Token Name</p>
+                        <p className="text-sm text-gray-500 mb-1">Distribution Name</p>
                         <p className="font-mono text-sm text-gray-900">{distribution.tokenName}</p>
                     </div>
                 </div>

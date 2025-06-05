@@ -32,7 +32,7 @@ export default function DepositStep({ formData, onNext, txSettings }: DepositSte
             <div className="bg-white border-2 border-gray-100 rounded-xl p-8">
                 <DepositBlock
                     splTokenAddress={formData.tokenAddress}
-                    depositAddress={distribution.depositAddress.address}
+                    depositAddress={distribution.depositAddress}
                     solAmount={txSettings?.fees.total ? parseFloat(txSettings.fees.total) : 0}
                     splAmount={totalSplAmount}
                     onDepositComplete={handleDeposit}

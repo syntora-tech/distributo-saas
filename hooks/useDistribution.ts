@@ -10,10 +10,7 @@ interface Recipient {
 interface Distribution {
     tokenAddress: string;
     tokenName: string;
-    depositAddress: {
-        id: string;
-        address: string;
-    };
+    depositAddress: string;
 }
 
 const fetcher = async (url: string) => {
@@ -44,7 +41,7 @@ export function useDistribution(storageKey?: string) {
                 setDistribution({
                     tokenAddress: formData.tokenAddress,
                     tokenName: formData.tokenName || 'Unknown Token',
-                    depositAddress: formData.depositAddress || { id: '', address: '' }
+                    depositAddress: formData.depositAddress || ''
                 });
                 setRecipients(formData.recipients);
             }

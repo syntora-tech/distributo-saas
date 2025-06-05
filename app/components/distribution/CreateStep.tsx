@@ -61,13 +61,13 @@ export default function CreateStep({ formData, onChange, onNext }: CreateStepPro
             }
 
             const distribution = await response.json();
-            onChange({ depositAddressId: distribution.depositAddress.id });
+            onChange({ depositAddress: distribution.depositAddress.address });
             // Зберігаємо дані з новим id в localStorage
             localStorage.setItem(`distribution_${distribution.id}`, JSON.stringify({
                 currentStep: 1,
                 formData: {
                     ...formData,
-                    depositAddressId: distribution.depositAddress.id
+                    depositAddress: distribution.depositAddress.address
                 },
                 isDistributing: false,
                 distributionProgress: 0,
@@ -97,10 +97,10 @@ export default function CreateStep({ formData, onChange, onNext }: CreateStepPro
                         placeholder="0x..."
                     />
                     <Input
-                        label="Token Name"
+                        label="Distribution Name"
                         value={formData.tokenName}
                         onChange={e => onChange({ tokenName: e.target.value })}
-                        placeholder="Token Name"
+                        placeholder="Distribution Name"
                     />
                 </div>
 

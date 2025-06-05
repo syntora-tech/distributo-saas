@@ -9,6 +9,12 @@ const distributionIdSchema = z.string().uuid({
     message: 'Invalid distribution ID format'
 });
 
+interface Recipient {
+    id: string;
+    amount: number;
+    walletAddress: string | null;
+}
+
 export async function GET(
     request: NextRequest,
     context: { params: { id: string } }
@@ -56,7 +62,23 @@ export async function GET(
             });
         }
 
-        return new Response(JSON.stringify(distribution), {
+        // Відфільтровуємо дані, щоб повернути чітку структуру
+        const filteredDistribution = {
+            id: distribution.id,
+            name: distribution.name,
+            tokenAddress: distribution.tokenAddress,
+            status: distribution.status,
+            createdAt: distribution.createdAt,
+            updatedAt: distribution.updatedAt,
+            depositAddress: distribution.depositAddress ? distribution.depositAddress.address : null,
+            recipients: distribution.recipients.map((recipient: Recipient) => ({
+                id: recipient.id,
+                amount: recipient.amount,
+                walletAddress: recipient.walletAddress
+            }))
+        };
+
+        return new Response(JSON.stringify(filteredDistribution), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
         });

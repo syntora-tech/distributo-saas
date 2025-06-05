@@ -7,7 +7,7 @@ export interface DistributionFormData {
     tokenAddress: string;
     tokenName: string;
     recipients: Recipient[];
-    depositAddressId?: string;
+    depositAddress?: string;
 }
 
 export type DistributionStep = 'create' | 'recipients' | 'review' | 'distribution' | 'complete';
@@ -28,11 +28,7 @@ export interface Distribution {
     status: DistributionStatus;
     createdAt: string;
     updatedAt: string;
-    depositAddress: {
-        id: string;
-        address: string;
-    };
-    depositAddressId: string;
+    depositAddress: string;
     recipients: Recipient[];
     userId: string;
 } 

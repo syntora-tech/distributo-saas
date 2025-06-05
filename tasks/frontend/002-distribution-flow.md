@@ -6,7 +6,7 @@ Create a multi-step distribution flow component that guides users through the to
 ## Requirements
 - Step 1: Create Distribution
   - Token address input
-  - Token name input
+  - Distribution name input
   - Wallet connection
   - Payload signing
 - Step 2: Add Recipients

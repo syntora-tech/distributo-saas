@@ -131,7 +131,13 @@ export async function POST(request: NextRequest) {
             }
         });
 
-        return new Response(JSON.stringify(distribution), { status: 201 });
+        return new Response(JSON.stringify({
+            id: distribution.id,
+            name: distribution.name,
+            tokenAddress: distribution.tokenAddress,
+            status: distribution.status,
+            depositAddress: distribution.depositAddress
+        }), { status: 201 });
     } catch (error) {
         console.error('Error creating distribution:', error);
         return new Response(JSON.stringify({ error: 'Failed to create distribution' }), { status: 500 });

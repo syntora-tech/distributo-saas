@@ -60,7 +60,7 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
                 tokenAddress: initialData.tokenAddress,
                 tokenName: initialData.name,
                 recipients: initialData.recipients || [],
-                depositAddressId: initialData.depositAddressId,
+                depositAddress: initialData.depositAddress,
             } : {
                 tokenAddress: '',
                 tokenName: '',
