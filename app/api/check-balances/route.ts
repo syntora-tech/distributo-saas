@@ -19,8 +19,8 @@ export async function GET(request: Request) {
 
         // Отримуємо адресу з бази даних
         const depositAddress = await prisma.depositAddress.findUnique({
-            where: { walletAddress: address },
-            select: { walletAddress: true }
+            where: { address: address },
+            select: { address: true }
         });
 
         if (!depositAddress) {
@@ -28,7 +28,7 @@ export async function GET(request: Request) {
         }
 
         const connection = getConnection(network);
-        const publicKey = new PublicKey(depositAddress.walletAddress);
+        const publicKey = new PublicKey(depositAddress.address);
 
         // Отримуємо баланс SOL
         const solBalance = await connection.getBalance(publicKey);

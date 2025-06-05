@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
-import { PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL, Connection } from '@solana/web3.js';
-import { TOKEN_PROGRAM_ID, createTransferInstruction } from '@solana/spl-token';
+import { useWallet, useConnection } from '@solana/wallet-adapter-react';
+import { PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { TOKEN_PROGRAM_ID, createTransferInstruction, getAssociatedTokenAddress, createAssociatedTokenAccountInstruction } from '@solana/spl-token';
 import { QRCodeSVG } from 'qrcode.react';
+import { Network } from '@/lib/blockchain/network';
 
 interface DepositBlockProps {
     depositAddress: string;
@@ -24,18 +24,19 @@ export const DepositBlock = ({
     const [solBalance, setSolBalance] = useState<number>(0);
     const [splBalance, setSplBalance] = useState<number>(0);
     const { publicKey, sendTransaction } = useWallet();
-    const connection = new Connection(process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com');
+    const { connection } = useConnection();
 
     useEffect(() => {
         const checkBalances = async () => {
             try {
-                const response = await fetch(`/api/check-balances?address=${depositAddress}`);
+                const network = connection.rpcEndpoint.includes('devnet') ? Network.SOLANA_DEVNET : Network.SOLANA_MAINNET;
+                const response = await fetch(`/api/check-balances?address=${depositAddress}&network=${network}`);
                 const data = await response.json();
 
-                setSolBalance(data.solBalance);
-                setSplBalance(data.splBalance);
+                setSolBalance(data.sol);
+                setSplBalance(data.spl[0]?.amount || 0);
 
-                if (data.solBalance >= solAmount && data.splBalance >= splAmount) {
+                if (data.sol >= solAmount && (data.spl[0]?.amount || 0) >= splAmount) {
                     onDepositComplete();
                 }
             } catch (error) {
@@ -43,9 +44,10 @@ export const DepositBlock = ({
             }
         };
 
+        checkBalances();
         const interval = setInterval(checkBalances, 15000);
         return () => clearInterval(interval);
-    }, [depositAddress, solAmount, splAmount, onDepositComplete]);
+    }, [depositAddress, solAmount, splAmount, onDepositComplete, connection]);
 
     const handleSolDeposit = async () => {
         if (!publicKey || !sendTransaction) return;
@@ -70,14 +72,44 @@ export const DepositBlock = ({
         if (!publicKey || !sendTransaction) return;
 
         try {
-            const transaction = new Transaction().add(
+            const mintPubkey = new PublicKey(splTokenAddress);
+            const destinationPubkey = new PublicKey(depositAddress);
+
+            // Отримуємо адреси токен-акаунтів
+            const sourceTokenAccount = await getAssociatedTokenAddress(
+                mintPubkey,
+                publicKey
+            );
+
+            const destinationTokenAccount = await getAssociatedTokenAddress(
+                mintPubkey,
+                destinationPubkey
+            );
+
+            const transaction = new Transaction();
+
+            // Перевіряємо чи існує токен-акаунт отримувача
+            const destinationAccount = await connection.getAccountInfo(destinationTokenAccount);
+
+            // Якщо токен-акаунт не існує, створюємо його
+            if (!destinationAccount) {
+                transaction.add(
+                    createAssociatedTokenAccountInstruction(
+                        publicKey, // payer
+                        destinationTokenAccount, // ata
+                        destinationPubkey, // owner
+                        mintPubkey // mint
+                    )
+                );
+            }
+
+            // Додаємо інструкцію передачі токенів
+            transaction.add(
                 createTransferInstruction(
-                    new PublicKey(splTokenAddress), // source token account
-                    new PublicKey(depositAddress), // destination token account
-                    publicKey, // owner of source account
-                    splAmount * Math.pow(10, 9), // amount (assuming 9 decimals)
-                    [], // multisig signers
-                    TOKEN_PROGRAM_ID
+                    sourceTokenAccount, // source
+                    destinationTokenAccount, // destination
+                    publicKey, // owner
+                    splAmount * Math.pow(10, 9) // amount
                 )
             );
 
@@ -89,25 +121,26 @@ export const DepositBlock = ({
     };
 
     return (
-        <div className="p-6 bg-white rounded-lg shadow-lg">
-            <div className="flex justify-between mb-4">
-                <h2 className="text-2xl font-bold">Deposit Funds</h2>
-                <div className="space-x-2">
-                    <button
-                        onClick={() => setViewMode('wallet')}
-                        className={`px-4 py-2 rounded ${viewMode === 'wallet' ? 'bg-blue-500 text-white' : 'bg-gray-200'
-                            }`}
-                    >
-                        Wallet
-                    </button>
-                    <button
-                        onClick={() => setViewMode('qr')}
-                        className={`px-4 py-2 rounded ${viewMode === 'qr' ? 'bg-blue-500 text-white' : 'bg-gray-200'
-                            }`}
-                    >
-                        QR Code
-                    </button>
-                </div>
+        <div className="space-y-6">
+            <div className="flex justify-center space-x-4">
+                <button
+                    onClick={() => setViewMode('wallet')}
+                    className={`px-4 py-2 rounded-lg ${viewMode === 'wallet'
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                >
+                    Wallet
+                </button>
+                <button
+                    onClick={() => setViewMode('qr')}
+                    className={`px-4 py-2 rounded-lg ${viewMode === 'qr'
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                >
+                    QR Code
+                </button>
             </div>
 
             {viewMode === 'wallet' ? (
@@ -117,29 +150,37 @@ export const DepositBlock = ({
                         <p className="text-sm break-all">{depositAddress}</p>
                     </div>
 
+                    <div className="bg-yellow-50 p-4 rounded">
+                        <p className="text-yellow-800">
+                            ⚠️ Please double-check the address before sending funds!
+                        </p>
+                    </div>
+
                     <div className="grid grid-cols-2 gap-4">
                         <div className="p-4 border rounded">
-                            <p className="font-semibold">SOL Amount:</p>
+                            <p className="font-semibold">Required SOL:</p>
                             <p>{solAmount} SOL</p>
-                            <button
-                                onClick={handleSolDeposit}
-                                className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                                disabled={!publicKey}
-                            >
-                                Deposit SOL
-                            </button>
+                            {publicKey && (
+                                <button
+                                    onClick={handleSolDeposit}
+                                    className="mt-2 w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                                >
+                                    Send SOL
+                                </button>
+                            )}
                         </div>
 
                         <div className="p-4 border rounded">
-                            <p className="font-semibold">SPL Token Amount:</p>
+                            <p className="font-semibold">Required SPL Tokens:</p>
                             <p>{splAmount} tokens</p>
-                            <button
-                                onClick={handleSplDeposit}
-                                className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                                disabled={!publicKey}
-                            >
-                                Deposit SPL
-                            </button>
+                            {publicKey && (
+                                <button
+                                    onClick={handleSplDeposit}
+                                    className="mt-2 w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                                >
+                                    Send SPL
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
