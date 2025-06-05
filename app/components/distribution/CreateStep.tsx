@@ -40,6 +40,8 @@ export default function CreateStep({ formData, onChange, onNext }: CreateStepPro
             const encodedMessage = new TextEncoder().encode(message);
             const signature = await signMessage(encodedMessage);
 
+            const network = connection.rpcEndpoint.includes('devnet') ? Network.SOLANA_DEVNET : Network.SOLANA_MAINNET;
+
             const response = await fetch('/api/distribution/create', {
                 method: 'POST',
                 headers: {
@@ -51,7 +53,7 @@ export default function CreateStep({ formData, onChange, onNext }: CreateStepPro
                     walletAddress: publicKey.toBase58(),
                     signature: bs58.encode(signature),
                     message,
-                    network: Network.SOLANA_DEVNET
+                    network
                 }),
             });
 
@@ -85,27 +87,30 @@ export default function CreateStep({ formData, onChange, onNext }: CreateStepPro
     const isButtonDisabled = !formData.tokenAddress || isLoading || !publicKey;
 
     return (
-        <div className="space-y-8">
-            <h2 className="text-2xl font-bold text-gray-900">Create Distribution</h2>
+        <div className="space-y-6">
+            <div className="bg-white p-6 rounded-lg shadow">
+                <h2 className="text-xl font-semibold mb-4">Create Distribution</h2>
 
-            <div className="bg-white border-2 border-gray-100 rounded-xl p-8">
-                <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-4">
+                    <Input
+                        label="Token Name"
+                        value={formData.tokenName}
+                        onChange={(e) => onChange({ tokenName: e.target.value })}
+                        placeholder="Enter token name"
+                    />
+
                     <Input
                         label="Token Address"
                         value={formData.tokenAddress}
-                        onChange={e => onChange({ tokenAddress: e.target.value })}
-                        placeholder="0x..."
-                    />
-                    <Input
-                        label="Distribution Name"
-                        value={formData.tokenName}
-                        onChange={e => onChange({ tokenName: e.target.value })}
-                        placeholder="Distribution Name"
+                        onChange={(e) => onChange({ tokenAddress: e.target.value })}
+                        placeholder="Enter token address"
                     />
                 </div>
 
                 {error && (
-                    <div className="mt-4 text-red-500 text-sm">{error}</div>
+                    <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-lg">
+                        {error}
+                    </div>
                 )}
 
                 <div className="mt-8">
