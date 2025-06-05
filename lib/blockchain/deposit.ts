@@ -1,7 +1,6 @@
 import { Keypair, PublicKey } from '@solana/web3.js';
 import * as bip39 from 'bip39';
 import { derivePath } from 'ed25519-hd-key';
-import { createHash } from 'crypto';
 
 export interface DepositAddress {
     address: string;
