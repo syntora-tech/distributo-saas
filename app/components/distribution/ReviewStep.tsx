@@ -5,12 +5,21 @@ import Table from '../Table';
 import { useEffect, useState } from 'react';
 import { useDistribution } from '@/hooks/useDistribution';
 import { Network } from '@/lib/blockchain/network';
+import { TransactionSpeedSelector } from './TransactionSpeedSelector';
+import { TransactionSpeed } from '@/types/distribution';
+import { NETWORK_TOKENS } from '@/lib/blockchain/config';
 
 interface ReviewStepProps {
     formData: DistributionFormData;
+    onSpeedChange?: (speed: TransactionSpeed) => void;
+    networkToken?: keyof typeof NETWORK_TOKENS;
 }
 
-export default function ReviewStep({ formData }: ReviewStepProps) {
+export default function ReviewStep({
+    formData,
+    onSpeedChange,
+    networkToken = 'SOL'
+}: ReviewStepProps) {
     const { distribution, recipients } = useDistribution();
 
     const totalAmount = formData.recipients.reduce((sum, r) => sum + r.amount, 0);
@@ -39,6 +48,15 @@ export default function ReviewStep({ formData }: ReviewStepProps) {
                         <p className="text-sm text-gray-500 mb-1">Total Amount</p>
                         <p className="text-2xl font-bold text-gray-900">{totalAmount}</p>
                     </div>
+                </div>
+
+                <div className="mt-4">
+                    <p className="text-sm text-gray-500 mb-2">Transaction Speed</p>
+                    <TransactionSpeedSelector
+                        recipients={formData.recipients}
+                        onSpeedChange={onSpeedChange || (() => { })}
+                        networkToken={networkToken}
+                    />
                 </div>
 
                 <div className="mt-4">
