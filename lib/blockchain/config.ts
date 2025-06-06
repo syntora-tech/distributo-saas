@@ -9,7 +9,10 @@ export const SPEED_TO_LAMPORTS: Record<TransactionSpeed, number> = {
     [TransactionSpeed.FAST]: 500_000,
 };
 
-export const SERVICE_FEE_SOL = 0.00001; // service fee per transaction in SOL
+export const SERVICE_FEE_SOL = 0.001; // service fee per transaction in SOL
+
+export const BASE_NETWORK_FEE = 50000; // lamports
+export const POST_TX_BUFFER = 1000000; // 0.001 SOL
 
 export const NETWORK_TOKENS = {
     [WalletAdapterNetwork.Mainnet]: {

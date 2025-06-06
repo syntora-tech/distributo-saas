@@ -1,4 +1,4 @@
-import { Network } from "@/lib/blockchain/network";
+import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 
 export enum TransactionSpeed {
     SLOW = 'slow',
@@ -14,7 +14,8 @@ export interface DistributionRecipient {
 export interface DistributionCalculationRequest {
     recipients: DistributionRecipient[];
     speed: TransactionSpeed;
-    network: Network;
+    network: WalletAdapterNetwork;
+    tokenMint: string;
 }
 
 export interface FeeBreakdown {
@@ -27,5 +28,5 @@ export interface DistributionCalculationResponse {
     totalTransactions: number;
     fees: FeeBreakdown;
     estimatedTime: string;
-    network: Network;
+    network: WalletAdapterNetwork;
 }

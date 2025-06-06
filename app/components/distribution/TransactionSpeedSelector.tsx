@@ -11,6 +11,8 @@ export interface CalculationData {
         networkFee: string;
         serviceFee: string;
         total: string;
+        rentExemptFee: string;
+        postTxBufferFee: string;
     };
     estimatedTime: string;
     network: WalletAdapterNetwork;
@@ -20,12 +22,14 @@ interface TransactionSpeedSelectorProps {
     recipients: { address: string; amount: number }[];
     onTxSettingsChange: (data: CalculationData) => void;
     initialSpeed: TransactionSpeed;
+    tokenMint: string;
 }
 
 export function TransactionSpeedSelector({
     recipients,
     onTxSettingsChange,
     initialSpeed,
+    tokenMint,
 }: TransactionSpeedSelectorProps) {
     const { network, endpoint } = useSolanaNetwork();
     const [selectedSpeed, setSelectedSpeed] = useState<TransactionSpeed>(initialSpeed);
@@ -48,7 +52,8 @@ export function TransactionSpeedSelector({
                         amount: r.amount.toString()
                     })),
                     speed,
-                    network: network
+                    network: network,
+                    tokenMint: tokenMint,
                 }),
             });
 
@@ -119,8 +124,16 @@ export function TransactionSpeedSelector({
                                 <span>{calculation.fees.networkFee} {tokenSymbol}</span>
                             </div>
                             <div className="flex justify-between">
+                                <span>Rent-Exempt Fee</span>
+                                <span>{calculation.fees.rentExemptFee} {tokenSymbol}</span>
+                            </div>
+                            <div className="flex justify-between">
                                 <span>Service Fee</span>
                                 <span>{calculation.fees.serviceFee} {tokenSymbol}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>Post-Tx Buffer Fee</span>
+                                <span>{calculation.fees.postTxBufferFee} {tokenSymbol}</span>
                             </div>
                             <div className="flex justify-between font-semibold border-t pt-1">
                                 <span>Total Fee</span>

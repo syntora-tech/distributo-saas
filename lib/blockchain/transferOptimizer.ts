@@ -4,7 +4,7 @@
 import { PublicKey, ComputeBudgetProgram, SystemProgram, TransactionInstruction, Transaction, Keypair, sendAndConfirmTransaction, Connection } from '@solana/web3.js';
 import { ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, createAssociatedTokenAccountInstruction, getAssociatedTokenAddress, createTransferInstruction, getMint } from '@solana/spl-token';
 import { TransactionSpeed } from '../../types/distribution';
-import { SPEED_TO_LAMPORTS, SERVICE_FEE_ADDRESS, SERVICE_FEE_SOL } from './config';
+import { SPEED_TO_LAMPORTS, SERVICE_FEE_ADDRESS, SERVICE_FEE_SOL, POST_TX_BUFFER } from './config';
 
 const PACKET_DATA_SIZE = 1280 - 40 - 8;
 const LAMPORTS_PER_SOL = 1_000_000_000;
@@ -20,7 +20,7 @@ export interface SplTransferResult {
     amount: number | string;
     txHash: string;
     timestamp: string;
-    status?: 'success' | 'failed';
+    status?: 'success' | 'failed' | 'simulated';
     error?: string;
 }
 
@@ -295,7 +295,7 @@ export class TransferOptimizer {
         }
 
         let totalChanks = txChunks.length;
-        let serviceFeeLamports = Math.ceil(SERVICE_FEE_SOL * LAMPORTS_PER_SOL * totalChanks);
+        let serviceFeeLamports = withServiceFee ? Math.ceil(SERVICE_FEE_SOL * LAMPORTS_PER_SOL * totalChanks) : 0;
         let serviceFeeIx: TransactionInstruction | null = null;
         if (withServiceFee) {
             serviceFeeIx = this.createServiceFeeTransferInstruction(serviceFeeLamports);
@@ -311,12 +311,12 @@ export class TransferOptimizer {
             }
         }
 
-        // Додаємо rent-exempt для ATA
+        // Estimate total fee (грубо: 5000 lamports за транзакцію + priorityFee + serviceFeeLamports + rent-exempt)
         const rentExemptLamports = ataCreateCount > 0 ? await this.connection.getMinimumBalanceForRentExemption(165) * ataCreateCount : 0;
-
-        // Estimate total fee (грубо: 5000 lamports за транзакцію + serviceFeeLamports + rent-exempt)
-        const totalFeeLamports = totalChanks * 5000 + (withServiceFee ? serviceFeeLamports : 0) + rentExemptLamports;
-        const balanceCheck = await this.#validateBalance(payerPubkey, totalFeeLamports);
+        const baseNetworkFeeLamports = await this.getNetworkFeePerTransaction(txChunks);
+        const priorityFeePerTx = SPEED_TO_LAMPORTS[speed] ?? SPEED_TO_LAMPORTS[TransactionSpeed.MEDIUM];
+        const networkFeeLamports = totalChanks * (baseNetworkFeeLamports + priorityFeePerTx) + rentExemptLamports;
+        const balanceCheck = await this.#validateBalance(payerPubkey, networkFeeLamports + serviceFeeLamports);
         if (!balanceCheck.valid) {
             return recipients.map(r => ({
                 to: r.to,
@@ -329,6 +329,7 @@ export class TransferOptimizer {
             }));
         }
 
+
         // Відправляємо транзакції з ретраями
         for (let i = 0; i < txChunks.length; i++) {
             const tx = new Transaction();
@@ -338,21 +339,25 @@ export class TransferOptimizer {
             tx.feePayer = payerPubkey;
             tx.recentBlockhash = (await this.connection.getLatestBlockhash()).blockhash;
 
+            // Точний fee для цього chunk
+            const message = tx.compileMessage();
+            const { value: chunkFee } = await this.connection.getFeeForMessage(message);
+            console.log('Chunk', i + 1, '/', txChunks.length, 'network fee (lamports):', chunkFee);
+
             // Логування для дебагу
             const chunkAtaCount = tx.instructions.filter(ix => ix.programId.equals(ASSOCIATED_TOKEN_PROGRAM_ID)).length;
             const rentExemptForChunk = chunkAtaCount > 0 ? await this.connection.getMinimumBalanceForRentExemption(165) * chunkAtaCount : 0;
             const chunkHasServiceFee = withServiceFee && tx.instructions.some(ix => ix.programId.equals(SystemProgram.programId) && ix.keys.some(k => k.pubkey.toBase58() === SERVICE_FEE_ADDRESS));
             const chunkServiceFee = chunkHasServiceFee ? serviceFeeLamports : 0;
-            const chunkFee = 5000;
             const balanceBefore = await this.connection.getBalance(payerPubkey);
             console.log('--- TRANSACTION CHUNK DEBUG ---');
-            console.log('Chunk', i + 1, '/', txChunks.length);
             console.log('Balance before:', balanceBefore);
             console.log('ATA to create:', chunkAtaCount);
             console.log('Rent-exempt for chunk:', rentExemptForChunk);
             console.log('ServiceFee in chunk:', chunkServiceFee);
-            console.log('Fee for chunk:', chunkFee);
+            console.log('Network fee (dynamic):', chunkFee);
             console.log('Instructions:', tx.instructions.map(ix => ix.programId.toBase58()));
+            console.log('Total fee:', networkFeeLamports + serviceFeeLamports);
             console.log('-------------------------------');
 
             try {
@@ -368,6 +373,8 @@ export class TransferOptimizer {
                         });
                     }
                 }
+
+
                 const sendResult = await this.#sendWithRetry(tx, [payer], 3);
                 const now = new Date().toISOString();
                 for (const r of chunkRecipientsArr[i]) {
@@ -466,5 +473,154 @@ export class TransferOptimizer {
             }
         }
         throw lastError;
+    }
+
+    /**
+     * Динамічно отримати network fee для типової транзакції з мережі
+     */
+    async getNetworkFeePerTransaction(txChunks: TransactionInstruction[][]): Promise<number> {
+        let fee = 0;
+        for (const chunk of txChunks) {
+            const tx = new Transaction();
+            for (const ix of chunk) {
+                tx.add(ix);
+            }
+            tx.feePayer = this.payerPubkey;
+            tx.recentBlockhash = (await this.connection.getLatestBlockhash()).blockhash;
+            const message = tx.compileMessage();
+            const { value: chunkFee } = await this.connection.getFeeForMessage(message);
+            fee += (chunkFee ?? 5000);
+        }
+        return fee;
+    }
+
+    /**
+     * Симуляція масового переказу SPL з ServiceFee (без виконання, лише simulateTransaction)
+     */
+    async simulateSplTokensWithServiceFee({
+        recipients,
+        tokenMint,
+        speed,
+        depositKeypair,
+        withServiceFee = true,
+    }: {
+        recipients: { to: string; amount: number | string }[];
+        tokenMint: PublicKey;
+        speed: TransactionSpeed;
+        depositKeypair: Keypair;
+        withServiceFee?: boolean;
+    }): Promise<{
+        networkFee: string;
+        serviceFee: string;
+        totalFee: string;
+        rentExemptFee: string;
+        postTxBufferFee: string;
+    }> {
+        const priorityFeeIx = this.getPriorityFeeInstructionBySpeed(speed);
+        const payer = depositKeypair;
+        const payerPubkey = payer.publicKey;
+        const decimals = await this.getTokenDecimals(tokenMint);
+
+        // Validate recipients
+        for (const recipient of recipients) {
+            const { valid } = this.#validateRecipient(recipient.to, recipient.amount);
+            if (!valid) {
+                return {
+                    networkFee: '',
+                    serviceFee: '',
+                    totalFee: '',
+                    rentExemptFee: '',
+                    postTxBufferFee: '',
+                };
+            }
+        }
+
+        // Готуємо всі інструкції для кожного отримувача
+        const allInstructions: { to: string; amount: number | string; ixs: TransactionInstruction[]; needsAta: boolean }[] = [];
+        let ataCreateCount = 0;
+        for (const recipient of recipients) {
+            const toPubkey = new PublicKey(recipient.to);
+            const parsedAmount = typeof recipient.amount === 'string' ? Number(recipient.amount) : recipient.amount;
+            const lamportsAmount = Math.round(parsedAmount * Math.pow(10, decimals));
+            const destinationAta = await this.calcAssociatedTokenAddress(toPubkey, tokenMint);
+            const destinationAtaExists = await this.getAssociatedTokenAddress(toPubkey, tokenMint);
+            const needsAta = !destinationAtaExists;
+            if (needsAta) ataCreateCount++;
+            const { instructions } = await this.createSplTransferInstructions(
+                payerPubkey,
+                toPubkey,
+                tokenMint,
+                lamportsAmount
+            );
+            allInstructions.push({ to: recipient.to, amount: lamportsAmount, ixs: instructions, needsAta });
+        }
+
+        // Chunking інструкцій у транзакції
+        const txChunks: TransactionInstruction[][] = [];
+        let currentChunk: TransactionInstruction[] = [priorityFeeIx];
+        let currentSize = this.#estimateInstructionsSize(currentChunk);
+        let chunkRecipients: { to: string; amount: number | string }[] = [];
+        const chunkRecipientsArr: { to: string; amount: number | string }[][] = [];
+        for (const { to, amount, ixs } of allInstructions) {
+            for (const ix of ixs) {
+                const estimatedSize = this.#estimateInstructionsSize([...currentChunk, ix]);
+                if (estimatedSize > PACKET_DATA_SIZE) {
+                    txChunks.push(currentChunk);
+                    chunkRecipientsArr.push(chunkRecipients);
+                    currentChunk = [priorityFeeIx, ix];
+                    currentSize = this.#estimateInstructionsSize(currentChunk);
+                } else {
+                    currentChunk.push(ix);
+                    currentSize = estimatedSize;
+                }
+            }
+            if (chunkRecipients.length === 0) {
+                chunkRecipients = [{ to, amount }];
+            } else {
+                chunkRecipients.push({ to, amount });
+            }
+        }
+        if (currentChunk.length > 1) {
+            txChunks.push(currentChunk);
+            chunkRecipientsArr.push(chunkRecipients);
+        }
+
+        let totalChanks = txChunks.length;
+        let serviceFeeLamports = Math.ceil(SERVICE_FEE_SOL * LAMPORTS_PER_SOL * totalChanks);
+        let serviceFeeIx: TransactionInstruction | null = null;
+        if (withServiceFee) {
+            serviceFeeIx = this.createServiceFeeTransferInstruction(serviceFeeLamports);
+            const lastChunkIdx = txChunks.length - 1;
+            if (lastChunkIdx >= 0 && this.#estimateInstructionsSize([...txChunks[lastChunkIdx], serviceFeeIx]) <= PACKET_DATA_SIZE) {
+                txChunks[lastChunkIdx].push(serviceFeeIx);
+            } else {
+                totalChanks++;
+                serviceFeeLamports = Math.ceil(SERVICE_FEE_SOL * LAMPORTS_PER_SOL * totalChanks);
+                const updatedServiceFeeIx = this.createServiceFeeTransferInstruction(serviceFeeLamports);
+                txChunks.push([priorityFeeIx, updatedServiceFeeIx]);
+                chunkRecipientsArr.push([]); // no SPL recipients in this chunk
+            }
+        }
+
+        const rentExemptLamports = ataCreateCount > 0 ? await this.connection.getMinimumBalanceForRentExemption(165) * ataCreateCount : 0;
+        const priorityFeePerTx = SPEED_TO_LAMPORTS[speed] ?? SPEED_TO_LAMPORTS[TransactionSpeed.MEDIUM];
+        const networkFeeLamports = await this.getNetworkFeePerTransaction(txChunks);
+        // totalNetworkFeeLamports += priorityFeePerTx;
+        // totalNetworkFeeLamports += rentExemptLamports;
+        // totalNetworkFeeLamports += POST_TX_BUFFER;
+
+        const totalFeeLamports = networkFeeLamports + priorityFeePerTx + rentExemptLamports + POST_TX_BUFFER + serviceFeeLamports;
+        const networkFee = ((networkFeeLamports + priorityFeePerTx) / LAMPORTS_PER_SOL).toFixed(6);
+        const rentExemptFee = (rentExemptLamports / LAMPORTS_PER_SOL).toFixed(6);
+        const postTxBufferFee = (POST_TX_BUFFER / LAMPORTS_PER_SOL).toFixed(6);
+        const serviceFee = (serviceFeeLamports / LAMPORTS_PER_SOL).toFixed(6);
+        const totalFee = (totalFeeLamports / LAMPORTS_PER_SOL).toFixed(6);
+        return {
+            networkFee,
+            serviceFee,
+            totalFee,
+            rentExemptFee,
+            postTxBufferFee,
+        };
     }
 } 

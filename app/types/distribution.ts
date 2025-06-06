@@ -4,6 +4,7 @@ export interface Recipient {
 }
 
 export interface DistributionFormData {
+    id: string;
     tokenAddress: string;
     tokenName: string;
     recipients: Recipient[];

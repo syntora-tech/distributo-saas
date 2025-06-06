@@ -6,12 +6,11 @@ import { CalculationData } from './TransactionSpeedSelector';
 
 interface DepositStepProps {
     formData: DistributionFormData;
-    onNext: () => void;
     txSettings: CalculationData | null;
 }
 
-export default function DepositStep({ formData, onNext, txSettings }: DepositStepProps) {
-    const { distribution } = useDistribution();
+export default function DepositStep({ formData, txSettings }: DepositStepProps) {
+    const { distribution } = useDistribution(`distribution_${formData.id}`);
     const [isReadyToProceed, setIsReadyToProceed] = useState(false);
 
 

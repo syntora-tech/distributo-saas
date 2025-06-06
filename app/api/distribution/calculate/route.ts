@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
-import { DistributionCalculationRequest, DistributionCalculationResponse, TransactionSpeed } from "@/types/distribution";
+import { DistributionCalculationRequest, TransactionSpeed } from "@/types/distribution";
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
+import { clusterApiUrl, Connection, Keypair, PublicKey } from '@solana/web3.js';
+import { TransferOptimizer } from '@/lib/blockchain/transferOptimizer';
 
 // Mock constants for different speeds
 const SPEED_CONFIGS: Record<TransactionSpeed, { networkFee: string; serviceFee: string; timePerTx: number }> = {
@@ -26,7 +28,16 @@ const calculateDistribution = async (
     recipients: DistributionCalculationRequest["recipients"],
     speed: TransactionSpeed,
     network: WalletAdapterNetwork
-): Promise<DistributionCalculationResponse> => {
+): Promise<{
+    totalTransactions: number;
+    fees: {
+        networkFee: string;
+        serviceFee: string;
+        total: string;
+    };
+    estimatedTime: string;
+    network: WalletAdapterNetwork;
+}> => {
     const config = SPEED_CONFIGS[speed];
     const totalTransactions = recipients.length;
 
@@ -51,7 +62,7 @@ export async function POST(request: Request) {
     try {
         const body = await request.json() as DistributionCalculationRequest;
 
-        if (!body.recipients || !Array.isArray(body.recipients) || !body.network) {
+        if (!body.recipients || !Array.isArray(body.recipients) || !body.network || !body.tokenMint) {
             return NextResponse.json(
                 { error: "Invalid request body" },
                 { status: 400 }
@@ -65,10 +76,40 @@ export async function POST(request: Request) {
             );
         }
 
-        const result = await calculateDistribution(body.recipients, body.speed, body.network as WalletAdapterNetwork);
-        return NextResponse.json(result);
+        // Визначаємо endpoint Solana
+        let endpoint = clusterApiUrl(body.network);
+        const connection = new Connection(endpoint, 'confirmed');
+
+        // Створюємо тимчасовий Keypair для feePayer (тільки для симуляції)
+        const payer = Keypair.generate();
+        const tokenMint = new PublicKey(body.tokenMint);
+        const optimizer = new TransferOptimizer(connection, payer.publicKey);
+
+        // recipients: { address, amount } -> { to, amount }
+        const recipients = body.recipients.map(r => ({ to: r.address, amount: r.amount }));
+
+        const simulationResult = await optimizer.simulateSplTokensWithServiceFee({
+            recipients,
+            tokenMint,
+            speed: body.speed,
+            depositKeypair: payer,
+            withServiceFee: true,
+        });
+
+        return NextResponse.json({
+            totalTransactions: recipients.length,
+            fees: {
+                networkFee: simulationResult.networkFee,
+                serviceFee: simulationResult.serviceFee,
+                total: simulationResult.totalFee,
+                rentExemptFee: simulationResult.rentExemptFee,
+                postTxBufferFee: simulationResult.postTxBufferFee,
+            },
+            estimatedTime: '', // можна додати оцінку часу, якщо потрібно
+            network: body.network,
+        });
     } catch (error) {
-        console.error("Error calculating distribution:", error);
+        console.error("Error simulating distribution:", error);
         return NextResponse.json(
             { error: "Internal server error" },
             { status: 500 }

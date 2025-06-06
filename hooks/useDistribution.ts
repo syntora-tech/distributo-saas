@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { DistributionFormData } from '@/app/types/distribution';
 import useSWR from 'swr';
 
 interface Recipient {

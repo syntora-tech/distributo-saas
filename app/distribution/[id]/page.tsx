@@ -125,10 +125,6 @@ export default function DistributionDetailsPage() {
                                     <p className="text-sm text-gray-500">Deposit Address</p>
                                     <p className="text-sm font-mono text-gray-900">{distribution.depositAddress}</p>
                                 </div>
-                                <div>
-                                    <p className="text-sm text-gray-500">Total Recipients</p>
-                                    <p className="text-sm text-gray-900">{distribution.recipients.length}</p>
-                                </div>
                             </div>
                         </div>
 

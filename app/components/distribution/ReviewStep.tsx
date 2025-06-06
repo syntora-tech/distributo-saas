@@ -2,11 +2,9 @@
 
 import { DistributionFormData } from '../../types/distribution';
 import Table from '../Table';
-import { useEffect, useState } from 'react';
 import { useDistribution } from '@/hooks/useDistribution';
 import { TransactionSpeedSelector } from './TransactionSpeedSelector';
 import { TransactionSpeed } from '@/types/distribution';
-import { NETWORK_TOKENS } from '@/lib/blockchain/config';
 import { CalculationData } from './TransactionSpeedSelector';
 
 interface ReviewStepProps {
@@ -20,7 +18,7 @@ export default function ReviewStep({
     txSettings,
     onTxSettingsChange,
 }: ReviewStepProps) {
-    const { distribution, recipients } = useDistribution();
+    const { distribution, recipients } = useDistribution(`distribution_${formData.id}`);
 
     const totalAmount = formData.recipients.reduce((sum, r) => sum + r.amount, 0);
 
@@ -56,6 +54,7 @@ export default function ReviewStep({
                         recipients={formData.recipients}
                         onTxSettingsChange={onTxSettingsChange || (() => { })}
                         initialSpeed={txSettings?.speed || TransactionSpeed.MEDIUM}
+                        tokenMint={formData.tokenAddress}
                     />
                 </div>
 

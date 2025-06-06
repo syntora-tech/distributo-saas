@@ -26,7 +26,6 @@ interface DistributionFlowProps {
 }
 
 export default function DistributionFlow({ initialData }: DistributionFlowProps) {
-    console.log('initialData', initialData);
     // Load initial state from localStorage or use defaults
     const loadInitialState = () => {
         if (initialData) {
@@ -57,8 +56,10 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
         }
 
         return {
+            id: initialData?.id,
             currentStep: initialData ? 1 : 0,
             formData: initialData ? {
+                id: initialData.id,
                 tokenAddress: initialData.tokenAddress,
                 tokenName: initialData.name,
                 recipients: initialData.recipients || [],
@@ -181,7 +182,7 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
             case 2:
                 return <ReviewStep formData={formData} txSettings={txSettings} onTxSettingsChange={handleTxSettingsChange} />;
             case 3:
-                return <DepositStep formData={formData} txSettings={txSettings} onNext={handleNext} />;
+                return <DepositStep formData={formData} txSettings={txSettings} />;
             case 4:
                 return <DistributionStep depositAddress={formData.depositAddress} txSettings={txSettings!} />;
             case 5:

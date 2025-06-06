@@ -65,35 +65,48 @@ export async function POST(request: Request) {
             depositKeypair: keypair,
             withServiceFee: true,
             onTxStatusUpdate: async ({ hash, status, amount, walletAddress, type, error }) => {
+                console.log('onTxStatusUpdate', { hash, status, amount, walletAddress, type, error });
                 if (walletAddress.toLocaleLowerCase() === SERVICE_FEE_ADDRESS.toLocaleLowerCase()) return;
-                if (status === 'PENDING') {
+                if (status === 'COMPLETED') {
                     await prisma.transaction.create({
                         data: {
-                            hash: '',
-                            status: 'PENDING',
+                            hash,
+                            status: 'COMPLETED',
                             amount: Number(amount),
                             walletAddress,
                             distributionId: distribution.id,
                             userId: distribution.userId,
                         }
                     });
-                } else {
-                    // Оновлюємо по walletAddress, amount, distributionId, status === PENDING
-                    await prisma.transaction.updateMany({
-                        where: {
-                            hash: '',
-                            status: 'PENDING',
-                            walletAddress,
-                            amount: Number(amount),
-                            distributionId: distribution.id,
-                        },
-                        data: {
-                            hash,
-                            status,
-                            ...(error ? { error } : {}),
-                        }
-                    });
                 }
+                // if (status === 'PENDING') {
+                //     await prisma.transaction.create({
+                //         data: {
+                //             hash,
+                //             status: 'PENDING',
+                //             amount: Number(amount),
+                //             walletAddress,
+                //             distributionId: distribution.id,
+                //             userId: distribution.userId,
+                //         }
+                //     });
+                // } else {
+                //     // Оновлюємо по walletAddress, amount, distributionId, status === PENDING
+                //     await prisma.transaction.updateMany({
+                //         where: {
+                //             hash,
+                //             status: 'PENDING',
+                //             walletAddress,
+                //             amount: Number(amount),
+                //             distributionId: distribution.id,
+                //         },
+                //         data: {
+                //             hash,
+                //             status,
+                //             ...(error ? { error } : {}),
+                //         }
+                //     });
+                // }
             },
         });
 
