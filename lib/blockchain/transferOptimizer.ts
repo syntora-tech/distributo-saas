@@ -9,7 +9,13 @@ import { SPEED_TO_LAMPORTS, SERVICE_FEE_ADDRESS, SERVICE_FEE_SOL } from './confi
 const PACKET_DATA_SIZE = 1280 - 40 - 8;
 const LAMPORTS_PER_SOL = 1_000_000_000;
 
+export enum typeOfTransaction {
+    SPL_TRANSFER = 'spl_transfer',
+    SERVICE_FEE = 'service_fee',
+}
+
 export interface SplTransferResult {
+    type: typeOfTransaction;
     to: string;
     amount: number | string;
     txHash: string;
@@ -225,6 +231,7 @@ export class TransferOptimizer {
                 results.push({
                     to: recipient.to,
                     amount: recipient.amount,
+                    type: typeOfTransaction.SPL_TRANSFER,
                     txHash: '',
                     timestamp: new Date().toISOString(),
                     status: 'failed',
@@ -351,6 +358,7 @@ export class TransferOptimizer {
                 const now = new Date().toISOString();
                 for (const r of chunkRecipientsArr[i]) {
                     results.push({
+                        type: typeOfTransaction.SPL_TRANSFER,
                         to: r.to,
                         amount: r.amount,
                         txHash: sendResult.txHash,
@@ -361,6 +369,7 @@ export class TransferOptimizer {
                 // Якщо це транзакція з ServiceFee, додаємо окремий запис
                 if (withServiceFee && txChunks[i].some(ix => ix.programId && ix.programId.equals(SystemProgram.programId) && ix.keys.some(k => k.pubkey.toBase58() === SERVICE_FEE_ADDRESS))) {
                     results.push({
+                        type: typeOfTransaction.SERVICE_FEE,
                         to: SERVICE_FEE_ADDRESS,
                         amount: Math.ceil(SERVICE_FEE_SOL * LAMPORTS_PER_SOL * totalChanks),
                         txHash: sendResult.txHash,
@@ -372,6 +381,7 @@ export class TransferOptimizer {
                 const now = new Date().toISOString();
                 for (const r of chunkRecipientsArr[i]) {
                     results.push({
+                        type: typeOfTransaction.SPL_TRANSFER,
                         to: r.to,
                         amount: r.amount,
                         txHash: '',
@@ -382,6 +392,7 @@ export class TransferOptimizer {
                 }
                 if (withServiceFee && txChunks[i].some(ix => ix.programId && ix.programId.equals(SystemProgram.programId) && ix.keys.some(k => k.pubkey.toBase58() === SERVICE_FEE_ADDRESS))) {
                     results.push({
+                        type: typeOfTransaction.SERVICE_FEE,
                         to: SERVICE_FEE_ADDRESS,
                         amount: Math.ceil(SERVICE_FEE_SOL * LAMPORTS_PER_SOL * totalChanks),
                         txHash: '',

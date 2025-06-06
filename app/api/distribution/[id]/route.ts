@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Transaction } from '@prisma/client';
 import { z } from 'zod';
 
 const prisma = new PrismaClient();
@@ -51,7 +51,7 @@ export async function GET(
             },
             include: {
                 depositAddress: true,
-                recipients: true,
+                transactions: true,
             },
         });
 
@@ -71,10 +71,14 @@ export async function GET(
             createdAt: distribution.createdAt,
             updatedAt: distribution.updatedAt,
             depositAddress: distribution.depositAddress ? distribution.depositAddress.address : null,
-            recipients: distribution.recipients.map((recipient: Recipient) => ({
-                id: recipient.id,
-                amount: recipient.amount,
-                walletAddress: recipient.walletAddress
+            transactions: distribution.transactions.map((transaction: Transaction) => ({
+                id: transaction.id,
+                amount: transaction.amount,
+                walletAddress: transaction.walletAddress,
+                status: transaction.status,
+                createdAt: transaction.createdAt,
+                userId: transaction.userId,
+                hash: transaction.hash,
             }))
         };
 

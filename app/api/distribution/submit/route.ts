@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import { DistributionFormData } from '../../../types/distribution';
 import prisma from '@/lib/prisma';
-import { Connection, PublicKey, Keypair } from '@solana/web3.js';
+import { PublicKey, Keypair } from '@solana/web3.js';
 import { derivePath } from 'ed25519-hd-key';
 import * as bip39 from 'bip39';
 import { TransferOptimizer } from '@/lib/blockchain/transferOptimizer';
 import { TransactionSpeed } from '@/types/distribution';
 import { getConnection, Network } from '@/lib/blockchain/network';
+import { SERVICE_FEE_ADDRESS } from '@/lib/blockchain/config';
 
 function generateKeypairFromMnemonicAndPath(mnemonic: string, derivationPath: string): Keypair {
     const seed = bip39.mnemonicToSeedSync(mnemonic);
@@ -66,14 +67,15 @@ export async function POST(request: Request) {
 
         // 5. Зберігаємо txHash-и у базу (Transaction)
         for (const res of results) {
-            if (res.txHash && res.status === 'success' && res.to !== process.env.SERVICE_FEE_ADDRESS) {
+            if (res.txHash && res.status === 'success' && res.to.toLocaleLowerCase() !== SERVICE_FEE_ADDRESS.toLocaleLowerCase()) {
                 await prisma.transaction.create({
                     data: {
                         hash: res.txHash,
                         status: 'COMPLETED',
                         amount: Number(res.amount),
+                        walletAddress: res.to,
                         distributionId: distribution.id,
-                        // recipientId: можна знайти по address якщо треба
+                        userId: distribution.userId,
                     }
                 });
             }

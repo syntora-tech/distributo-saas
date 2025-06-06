@@ -1,6 +1,6 @@
-export const SERVICE_FEE_ADDRESS = '8XjXH2oEJPLLXcR6QSZADF5xyNH6gQQkQ1kgSHDTrcLy';
-
 import { TransactionSpeed } from '../../types/distribution';
+
+export const SERVICE_FEE_ADDRESS = '8XjXH2oEJPLLXcR6QSZADF5xyNH6gQQkQ1kgSHDTrcLy';
 
 export const SPEED_TO_LAMPORTS: Record<TransactionSpeed, number> = {
     [TransactionSpeed.SLOW]: 50_000,
