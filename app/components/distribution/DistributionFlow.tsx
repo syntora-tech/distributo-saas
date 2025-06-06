@@ -26,6 +26,7 @@ interface DistributionFlowProps {
 }
 
 export default function DistributionFlow({ initialData }: DistributionFlowProps) {
+    console.log('initialData', initialData);
     // Load initial state from localStorage or use defaults
     const loadInitialState = () => {
         if (initialData) {

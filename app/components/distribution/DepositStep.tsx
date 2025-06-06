@@ -14,14 +14,6 @@ export default function DepositStep({ formData, onNext, txSettings }: DepositSte
     const { distribution } = useDistribution();
     const [isReadyToProceed, setIsReadyToProceed] = useState(false);
 
-    const handleDeposit = async () => {
-        try {
-            // TODO: Implement deposit logic
-            onNext();
-        } catch (error) {
-            console.error('Error depositing:', error);
-        }
-    };
 
     if (!distribution) return null;
 

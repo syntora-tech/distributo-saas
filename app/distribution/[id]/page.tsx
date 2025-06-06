@@ -16,6 +16,7 @@ export default function DistributionDetailsPage() {
     useEffect(() => {
         const fetchDistribution = async () => {
             try {
+                console.log('params.id', params.id);
                 const response = await fetch(`/api/distribution/${params.id}`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch distribution');
