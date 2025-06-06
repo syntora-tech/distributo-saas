@@ -10,7 +10,7 @@ interface DepositBlockProps {
     solAmount: number;
     splAmount: number;
     splTokenAddress: string;
-    onDepositComplete: () => void;
+    onReadyToProceed?: (ready: boolean) => void;
 }
 
 export const DepositBlock = ({
@@ -18,7 +18,7 @@ export const DepositBlock = ({
     solAmount,
     splAmount,
     splTokenAddress,
-    onDepositComplete,
+    onReadyToProceed,
 }: DepositBlockProps) => {
     const [viewMode, setViewMode] = useState<'wallet' | 'qr'>('wallet');
     const [solBalance, setSolBalance] = useState<number>(0);
@@ -36,18 +36,23 @@ export const DepositBlock = ({
                 setSolBalance(data.sol);
                 setSplBalance(data.spl[0]?.amount || 0);
 
-                if (data.sol >= solAmount && (data.spl[0]?.amount || 0) >= splAmount) {
-                    onDepositComplete();
+                if (onReadyToProceed) {
+                    if (data.sol >= solAmount && (data.spl[0]?.amount || 0) >= splAmount) {
+                        onReadyToProceed(true);
+                    } else {
+                        onReadyToProceed(false);
+                    }
                 }
             } catch (error) {
                 console.error('Error checking balances:', error);
+                if (onReadyToProceed) onReadyToProceed(false);
             }
         };
 
         checkBalances();
         const interval = setInterval(checkBalances, 15000);
         return () => clearInterval(interval);
-    }, [depositAddress, solAmount, splAmount, onDepositComplete, connection]);
+    }, [depositAddress, solAmount, splAmount, connection, onReadyToProceed]);
 
     const handleSolDeposit = async () => {
         if (!publicKey || !sendTransaction) return;

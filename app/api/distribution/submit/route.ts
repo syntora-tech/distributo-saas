@@ -1,61 +1,85 @@
 import { NextResponse } from 'next/server';
 import { DistributionFormData } from '../../../types/distribution';
 import prisma from '@/lib/prisma';
-import { Connection, PublicKey } from '@solana/web3.js';
+import { Connection, PublicKey, Keypair } from '@solana/web3.js';
+import { derivePath } from 'ed25519-hd-key';
+import * as bip39 from 'bip39';
+import { TransferOptimizer } from '@/lib/blockchain/transferOptimizer';
+import { TransactionSpeed } from '@/types/distribution';
+import { getConnection, Network } from '@/lib/blockchain/network';
 
-type TransactionSpeed = 'slow' | 'medium' | 'fast' | 'custom';
-
-const SPEED_MULTIPLIERS: Record<TransactionSpeed, number> = {
-    slow: 1,
-    medium: 1.5,
-    fast: 2,
-    custom: 1,
-};
+function generateKeypairFromMnemonicAndPath(mnemonic: string, derivationPath: string): Keypair {
+    const seed = bip39.mnemonicToSeedSync(mnemonic);
+    const { key } = derivePath(derivationPath, seed.toString('hex'));
+    return Keypair.fromSeed(key);
+}
 
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { distributionId, formData, transactionSpeed = 'medium', customMultiplier } = body as {
-            distributionId: string;
+        const { distributionAddress, formData, transactionSpeed = 'medium', network = Network.SOLANA_DEVNET } = body as {
+            distributionAddress: string;
             formData: DistributionFormData;
             transactionSpeed?: TransactionSpeed;
             customMultiplier?: number;
+            network?: string;
         };
 
-        if (!distributionId || !formData) {
+        if (!distributionAddress || !formData) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        // Отримуємо базову вартість транзакції
-        const connection = new Connection(process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com');
-        const { feeCalculator } = await connection.getRecentBlockhash();
-        const baseFee = feeCalculator.lamportsPerSignature;
+        // 1. Дістаємо distribution через depositAddress.address
+        const depositAddress = await prisma.depositAddress.findUnique({
+            where: { address: distributionAddress },
+            include: { distributions: true }
+        });
+        if (!depositAddress || !depositAddress.distributions.length) {
+            return NextResponse.json({ error: 'Distribution not found for this address' }, { status: 404 });
+        }
+        // Беремо останню дистрибуцію для цієї адреси (або уточнити логіку)
+        const distribution = depositAddress.distributions[depositAddress.distributions.length - 1];
+        const derivationPath = depositAddress.derivationPath;
 
-        // Розраховуємо загальну вартість для всіх транзакцій
-        const totalTransactions = formData.recipients.length;
-        const multiplier = transactionSpeed === 'custom' && customMultiplier
-            ? customMultiplier
-            : SPEED_MULTIPLIERS[transactionSpeed];
-        const totalFee = baseFee * totalTransactions * multiplier;
+        // 2. Дістаємо mnemonic з env
+        const mnemonic = process.env.MNEMONIC;
+        if (!mnemonic) {
+            return NextResponse.json({ error: 'Mnemonic not set in env' }, { status: 500 });
+        }
 
-        // Оновлюємо статус дистрибуції
-        const distribution = await prisma.distribution.update({
-            where: { id: distributionId },
-            data: {
-                status: 'ACTIVE',
-                recipients: {
-                    create: formData.recipients.map((recipient: any) => ({
-                        address: recipient.address,
-                        amount: recipient.amount,
-                    })),
-                },
-                transactionSpeed,
-                customMultiplier: transactionSpeed === 'custom' ? customMultiplier : null,
-                estimatedFee: totalFee,
-            },
+        // 3. Генеруємо Keypair напряму з mnemonic та derivationPath
+        const keypair = generateKeypairFromMnemonicAndPath(mnemonic, derivationPath);
+
+        // 4. Викликаємо TransferOptimizer
+        const connection = getConnection(network as Network);
+        const optimizer = new TransferOptimizer(connection, keypair.publicKey);
+        const recipients = formData.recipients.map(r => ({ to: r.address, amount: r.amount }));
+        const tokenMint = new PublicKey(formData.tokenAddress);
+        const speed = transactionSpeed.toUpperCase() as TransactionSpeed || TransactionSpeed.MEDIUM;
+        const results = await optimizer.distributeSplTokensWithServiceFee({
+            recipients,
+            tokenMint,
+            speed,
+            depositKeypair: keypair,
+            withServiceFee: true
         });
 
-        return NextResponse.json(distribution);
+        // 5. Зберігаємо txHash-и у базу (Transaction)
+        for (const res of results) {
+            if (res.txHash && res.status === 'success' && res.to !== process.env.SERVICE_FEE_ADDRESS) {
+                await prisma.transaction.create({
+                    data: {
+                        hash: res.txHash,
+                        status: 'COMPLETED',
+                        amount: Number(res.amount),
+                        distributionId: distribution.id,
+                        // recipientId: можна знайти по address якщо треба
+                    }
+                });
+            }
+        }
+
+        return NextResponse.json({ distributionId: distribution.id, results });
     } catch (error) {
         console.error('Error submitting distribution:', error);
         return NextResponse.json(

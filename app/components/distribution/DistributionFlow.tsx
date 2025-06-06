@@ -10,6 +10,7 @@ import DistributionStep from './DistributionStep';
 import CompleteStep from './CompleteStep';
 import DepositStep from './DepositStep';
 import { CalculationData } from './TransactionSpeedSelector';
+import { Network } from '@/lib/blockchain/network';
 
 const steps = [
     { id: 'create', name: 'Create Distribution' },
@@ -132,14 +133,19 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
     const handleSubmit = async () => {
         setIsDistributing(true);
         try {
+            const distributionAddress = formData.depositAddress || initialData?.depositAddress;
+            const transactionSpeed = txSettings?.speed || TransactionSpeed.MEDIUM;
+            const network = (formData as any).network || (initialData as any)?.network || Network.SOLANA_DEVNET;
             const response = await fetch('/api/distribution/submit', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    distributionId: initialData?.id,
+                    distributionAddress,
                     formData,
+                    transactionSpeed,
+                    network,
                 }),
             });
 
@@ -148,7 +154,7 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
                 throw new Error(data.error || 'Failed to submit distribution');
             }
 
-            handleNext();
+            // handleNext();
         } catch (error) {
             console.error('Error submitting distribution:', error);
         } finally {

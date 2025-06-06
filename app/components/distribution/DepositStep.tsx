@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { DistributionFormData } from '../../types/distribution';
 import { DepositBlock } from '../DepositBlock';
 import { useDistribution } from '@/hooks/useDistribution';
@@ -11,6 +12,7 @@ interface DepositStepProps {
 
 export default function DepositStep({ formData, onNext, txSettings }: DepositStepProps) {
     const { distribution } = useDistribution();
+    const [isReadyToProceed, setIsReadyToProceed] = useState(false);
 
     const handleDeposit = async () => {
         try {
@@ -35,8 +37,17 @@ export default function DepositStep({ formData, onNext, txSettings }: DepositSte
                     depositAddress={distribution.depositAddress}
                     solAmount={txSettings?.fees.total ? parseFloat(txSettings.fees.total) : 0}
                     splAmount={totalSplAmount}
-                    onDepositComplete={handleDeposit}
+                    onReadyToProceed={setIsReadyToProceed}
                 />
+            </div>
+            <div className="flex justify-end">
+                <button
+                    onClick={handleDeposit}
+                    disabled={!isReadyToProceed}
+                    className={`px-6 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                    Next
+                </button>
             </div>
         </div>
     );
