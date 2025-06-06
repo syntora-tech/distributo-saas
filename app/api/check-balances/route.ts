@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
 import { Connection, PublicKey } from '@solana/web3.js';
 import prisma from '@/lib/prisma';
-import { Network, NETWORK_CONFIGS, isValidNetwork, getConnection } from '@/lib/blockchain/network';
+import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
+import { NETWORK_CONFIGS, isValidNetwork, getConnection } from '@/lib/blockchain/network';
 
 export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
         const address = searchParams.get('address');
-        const network = searchParams.get('network') as Network || Network.SOLANA_MAINNET;
+        const network = searchParams.get('network') as WalletAdapterNetwork || WalletAdapterNetwork.Devnet;
 
         if (!address) {
             return NextResponse.json({ error: 'Address is required' }, { status: 400 });

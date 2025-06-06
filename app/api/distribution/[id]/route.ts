@@ -9,12 +9,6 @@ const distributionIdSchema = z.string().uuid({
     message: 'Invalid distribution ID format'
 });
 
-interface Recipient {
-    id: string;
-    amount: number;
-    walletAddress: string | null;
-}
-
 export async function GET(
     request: NextRequest,
     context: { params: { id: string } }

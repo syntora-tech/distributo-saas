@@ -6,8 +6,9 @@ import { derivePath } from 'ed25519-hd-key';
 import * as bip39 from 'bip39';
 import { TransferOptimizer } from '@/lib/blockchain/transferOptimizer';
 import { TransactionSpeed } from '@/types/distribution';
-import { getConnection, Network } from '@/lib/blockchain/network';
+import { getConnection } from '@/lib/blockchain/network';
 import { SERVICE_FEE_ADDRESS } from '@/lib/blockchain/config';
+import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 
 function generateKeypairFromMnemonicAndPath(mnemonic: string, derivationPath: string): Keypair {
     const seed = bip39.mnemonicToSeedSync(mnemonic);
@@ -18,12 +19,12 @@ function generateKeypairFromMnemonicAndPath(mnemonic: string, derivationPath: st
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { distributionAddress, formData, transactionSpeed = 'medium', network = Network.SOLANA_DEVNET } = body as {
+        const { distributionAddress, formData, transactionSpeed = 'medium', network = WalletAdapterNetwork.Devnet } = body as {
             distributionAddress: string;
             formData: DistributionFormData;
             transactionSpeed?: TransactionSpeed;
             customMultiplier?: number;
-            network?: string;
+            network?: WalletAdapterNetwork;
         };
 
         if (!distributionAddress || !formData) {
@@ -52,7 +53,7 @@ export async function POST(request: Request) {
         const keypair = generateKeypairFromMnemonicAndPath(mnemonic, derivationPath);
 
         // 4. Викликаємо TransferOptimizer
-        const connection = getConnection(network as Network);
+        const connection = getConnection(network as WalletAdapterNetwork);
         const optimizer = new TransferOptimizer(connection, keypair.publicKey);
         const recipients = formData.recipients.map(r => ({ to: r.address, amount: r.amount }));
         const tokenMint = new PublicKey(formData.tokenAddress);

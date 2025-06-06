@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { DistributionCalculationRequest, DistributionCalculationResponse, TransactionSpeed } from "@/types/distribution";
-import { Network } from "@/lib/blockchain/network";
+import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 
 // Mock constants for different speeds
 const SPEED_CONFIGS: Record<TransactionSpeed, { networkFee: string; serviceFee: string; timePerTx: number }> = {
@@ -25,7 +25,7 @@ const SPEED_CONFIGS: Record<TransactionSpeed, { networkFee: string; serviceFee: 
 const calculateDistribution = async (
     recipients: DistributionCalculationRequest["recipients"],
     speed: TransactionSpeed,
-    network: Network
+    network: WalletAdapterNetwork
 ): Promise<DistributionCalculationResponse> => {
     const config = SPEED_CONFIGS[speed];
     const totalTransactions = recipients.length;
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
             );
         }
 
-        const result = await calculateDistribution(body.recipients, body.speed, body.network);
+        const result = await calculateDistribution(body.recipients, body.speed, body.network as WalletAdapterNetwork);
         return NextResponse.json(result);
     } catch (error) {
         console.error("Error calculating distribution:", error);

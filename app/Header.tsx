@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import WalletButton from './components/WalletButton';
 import Logo from './components/Logo';
 import { useConnection } from '@solana/wallet-adapter-react';
+import NetworkSelector from './components/NetworkSelector';
 
 export default function Header() {
   const pathname = usePathname();
@@ -15,12 +16,10 @@ export default function Header() {
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center">
           <Logo />
+          <NetworkSelector />
         </Link>
 
         <div className="flex items-center space-x-4">
-          <div className="text-sm text-gray-600 font-medium">
-            {connection.rpcEndpoint.includes('devnet') ? 'Devnet' : 'Mainnet'}
-          </div>
           <Link
             href="/"
             className={`px-4 py-2 rounded-lg transition ${pathname === '/'

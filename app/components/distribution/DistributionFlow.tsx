@@ -10,7 +10,7 @@ import DistributionStep from './DistributionStep';
 import CompleteStep from './CompleteStep';
 import DepositStep from './DepositStep';
 import { CalculationData } from './TransactionSpeedSelector';
-import { Network } from '@/lib/blockchain/network';
+import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 
 const steps = [
     { id: 'create', name: 'Create Distribution' },
@@ -135,7 +135,7 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
         try {
             const distributionAddress = formData.depositAddress || initialData?.depositAddress;
             const transactionSpeed = txSettings?.speed || TransactionSpeed.MEDIUM;
-            const network = (formData as any).network || (initialData as any)?.network || Network.SOLANA_DEVNET;
+            const network = (formData as any).network || (initialData as any)?.network || WalletAdapterNetwork.Devnet;
             const response = await fetch('/api/distribution/submit', {
                 method: 'POST',
                 headers: {

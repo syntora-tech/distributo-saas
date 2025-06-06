@@ -3,7 +3,7 @@ import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { createTransferInstruction, getAssociatedTokenAddress, createAssociatedTokenAccountInstruction } from '@solana/spl-token';
 import { QRCodeSVG } from 'qrcode.react';
-import { useNetwork } from '../hooks/useWallet';
+import { useSolanaNetwork } from '../context/SolanaNetworkContext';
 
 interface DepositBlockProps {
     depositAddress: string;
@@ -24,7 +24,7 @@ export const DepositBlock = ({
     const [solBalance, setSolBalance] = useState<number>(0);
     const [splBalance, setSplBalance] = useState<number>(0);
     const { publicKey, sendTransaction } = useWallet();
-    const { network } = useNetwork();
+    const { network, endpoint } = useSolanaNetwork();
     const { connection } = useConnection();
 
     useEffect(() => {

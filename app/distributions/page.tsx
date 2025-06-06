@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
+import { useSolanaNetwork } from '../context/SolanaNetworkContext';
 import DistributionCard from '../components/distribution/DistributionCard';
 import { Distribution } from '../types/distribution';
 
 export default function DistributionsPage() {
     const { publicKey } = useWallet();
+    const { network, endpoint } = useSolanaNetwork();
     const [distributions, setDistributions] = useState<Distribution[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);

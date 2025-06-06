@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useNetwork } from '../../hooks/useWallet';
+import { useSolanaNetwork } from '../../context/SolanaNetworkContext';
 
 interface DistributionStepProps {
     depositAddress: string;
@@ -9,7 +9,7 @@ interface DistributionStepProps {
 }
 
 export default function DistributionStep({ depositAddress, txSettings }: DistributionStepProps) {
-    const network = useNetwork();
+    const { network, endpoint } = useSolanaNetwork();
     const [completedTxs, setCompletedTxs] = useState(0);
     const [txs, setTxs] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);

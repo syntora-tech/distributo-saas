@@ -8,10 +8,10 @@ import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { PhantomWalletAdapter, SolflareWalletAdapter } from '@solana/wallet-adapter-wallets';
 import { clusterApiUrl } from '@solana/web3.js';
 import { useMemo } from 'react';
+import { SolanaNetworkProvider, useSolanaNetwork } from "./context/SolanaNetworkContext";
 
-export default function Providers({ children }: { children: React.ReactNode }) {
-  const network = WalletAdapterNetwork.Devnet;
-  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+function SolanaWalletProviders({ children }: { children: React.ReactNode }) {
+  const { network, endpoint } = useSolanaNetwork();
   const wallets = useMemo(
     () => [
       new PhantomWalletAdapter(),
@@ -28,5 +28,15 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         </WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>
+  );
+}
+
+export default function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <SolanaNetworkProvider>
+      <SolanaWalletProviders>
+        {children}
+      </SolanaWalletProviders>
+    </SolanaNetworkProvider>
   );
 } 

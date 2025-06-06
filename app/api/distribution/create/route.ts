@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { sign } from 'tweetnacl';
-import { Network } from '@/lib/blockchain/network';
+import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import { generateDepositAddress } from '@/lib/blockchain/deposit';
 import { z } from 'zod';
 import { createHash } from 'crypto';
@@ -13,11 +13,11 @@ const createDistributionSchema = z.object({
     name: z.string().min(1, 'Name is required'),
     tokenAddress: z.string().min(1, 'Token address is required'),
     walletAddress: z.string().min(1, 'Wallet address is required'),
-    network: z.nativeEnum(Network),
+    network: z.nativeEnum(WalletAdapterNetwork),
     signature: z.string().optional(),
     message: z.string().optional(),
 }).refine(data => {
-    if (data.network !== Network.SOLANA_DEVNET) {
+    if (data.network !== WalletAdapterNetwork.Devnet) {
         return !!data.signature && !!data.message;
     }
     return true;
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
 
         const { name, tokenAddress, walletAddress, signature, message, network } = validationResult.data;
 
-        if (network !== Network.SOLANA_DEVNET) {
+        if (network !== WalletAdapterNetwork.Devnet) {
             const messageBytes = new TextEncoder().encode(message);
             const signatureBytes = new Uint8Array(signature!.split(',').map(Number));
             const publicKeyBytes = new Uint8Array(walletAddress.split(',').map(Number));

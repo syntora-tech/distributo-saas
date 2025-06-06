@@ -166,3 +166,9 @@ Once the server is running, visit `http://localhost:3000` to start using the app
 - [Prisma Client API reference](https://www.prisma.io/docs/orm/prisma-client)
 - [Join our Discord community](https://discord.com/invite/prisma)
 - [Follow us on Twitter](https://twitter.com/prisma)
+
+## Solana Network Management
+
+- Мережа (Devnet/Mainnet/Testnet) визначається через змінну оточення `NEXT_PUBLIC_SOLANA_NETWORK` у .env файлі.
+- Вибір мережі через UI вимкнено, у Header лише відображається поточна мережа.
+- Всі підключення до Solana (ConnectionProvider, WalletProvider) автоматично використовують цю мережу.

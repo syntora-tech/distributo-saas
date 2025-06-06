@@ -8,6 +8,7 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import { useConnection } from '@solana/wallet-adapter-react';
 import { Network } from '@/lib/blockchain/network';
 import bs58 from 'bs58';
+import { useSolanaNetwork } from '../../context/SolanaNetworkContext';
 
 interface CreateStepProps {
     formData: DistributionFormData;
@@ -20,6 +21,7 @@ export default function CreateStep({ formData, onChange, onNext }: CreateStepPro
     const { connection } = useConnection();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const { network, endpoint } = useSolanaNetwork();
 
     const handleCreate = async () => {
         if (!publicKey || !signMessage) {
@@ -39,8 +41,6 @@ export default function CreateStep({ formData, onChange, onNext }: CreateStepPro
             const message = createDistributionMessage(formData.tokenAddress, formData.tokenName);
             const encodedMessage = new TextEncoder().encode(message);
             const signature = await signMessage(encodedMessage);
-
-            const network = connection.rpcEndpoint.includes('devnet') ? Network.SOLANA_DEVNET : Network.SOLANA_MAINNET;
 
             const response = await fetch('/api/distribution/create', {
                 method: 'POST',

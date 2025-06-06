@@ -8,6 +8,14 @@ interface DistributionCardProps {
     distribution: Distribution;
 }
 
+function getAddressString(val: unknown): string {
+    if (typeof val === 'string') return val;
+    if (val && typeof val === 'object' && 'address' in val && typeof (val as any).address === 'string') {
+        return (val as any).address;
+    }
+    return '';
+}
+
 export default function DistributionCard({ distribution }: DistributionCardProps) {
     const router = useRouter();
     const statusColors = {
@@ -48,13 +56,13 @@ export default function DistributionCard({ distribution }: DistributionCardProps
                     <div>
                         <p className="text-sm text-gray-500 mb-1">Token Address</p>
                         <p className="text-sm font-mono text-gray-900 truncate">
-                            {distribution.tokenAddress}
+                            {getAddressString(distribution.tokenAddress)}
                         </p>
                     </div>
                     <div>
                         <p className="text-sm text-gray-500 mb-1">Deposit Address</p>
                         <p className="text-sm font-mono text-gray-900 truncate">
-                            {distribution.depositAddress}
+                            {getAddressString(distribution.depositAddress)}
                         </p>
                     </div>
                 </div>

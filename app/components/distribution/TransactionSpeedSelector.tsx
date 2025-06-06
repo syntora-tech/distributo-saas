@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { TransactionSpeed } from '@/types/distribution';
 import { NETWORK_TOKENS } from '@/lib/blockchain/config';
-import { Network } from '@/lib/blockchain/network';
-import { useNetwork } from '@/app/hooks/useWallet';
+import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
+import { useSolanaNetwork } from '../../context/SolanaNetworkContext';
 
 export interface CalculationData {
     totalTransactions: number;
@@ -13,7 +13,7 @@ export interface CalculationData {
         total: string;
     };
     estimatedTime: string;
-    network: Network;
+    network: WalletAdapterNetwork;
 }
 
 interface TransactionSpeedSelectorProps {
@@ -27,7 +27,7 @@ export function TransactionSpeedSelector({
     onTxSettingsChange,
     initialSpeed,
 }: TransactionSpeedSelectorProps) {
-    const network = useNetwork();
+    const { network, endpoint } = useSolanaNetwork();
     const [selectedSpeed, setSelectedSpeed] = useState<TransactionSpeed>(initialSpeed);
     const [calculation, setCalculation] = useState<CalculationData | null>(null);
     const calculateFees = async (speed: TransactionSpeed) => {
@@ -80,7 +80,7 @@ export function TransactionSpeedSelector({
         calculateFees(selectedSpeed);
     }, [network, selectedSpeed]);
 
-    const tokenSymbol = NETWORK_TOKENS[network as Network]?.symbol;
+    const tokenSymbol = NETWORK_TOKENS[network as WalletAdapterNetwork]?.symbol;
 
     return (
         <div className="space-y-4">

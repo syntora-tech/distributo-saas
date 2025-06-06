@@ -1,5 +1,5 @@
+import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import { TransactionSpeed } from '../../types/distribution';
-import { Network } from './network';
 
 export const SERVICE_FEE_ADDRESS = '8XjXH2oEJPLLXcR6QSZADF5xyNH6gQQkQ1kgSHDTrcLy';
 
@@ -12,11 +12,15 @@ export const SPEED_TO_LAMPORTS: Record<TransactionSpeed, number> = {
 export const SERVICE_FEE_SOL = 0.00001; // service fee per transaction in SOL
 
 export const NETWORK_TOKENS = {
-    [Network.SOLANA_MAINNET]: {
+    [WalletAdapterNetwork.Mainnet]: {
         symbol: 'SOL',
         decimals: 9,
     },
-    [Network.SOLANA_DEVNET]: {
+    [WalletAdapterNetwork.Devnet]: {
+        symbol: 'SOL',
+        decimals: 9,
+    },
+    [WalletAdapterNetwork.Testnet]: {
         symbol: 'SOL',
         decimals: 9,
     },
