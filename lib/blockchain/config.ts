@@ -1,4 +1,5 @@
 import { TransactionSpeed } from '../../types/distribution';
+import { Network } from './network';
 
 export const SERVICE_FEE_ADDRESS = '8XjXH2oEJPLLXcR6QSZADF5xyNH6gQQkQ1kgSHDTrcLy';
 
@@ -11,12 +12,14 @@ export const SPEED_TO_LAMPORTS: Record<TransactionSpeed, number> = {
 export const SERVICE_FEE_SOL = 0.00001; // service fee per transaction in SOL
 
 export const NETWORK_TOKENS = {
-    SOL: {
+    [Network.SOLANA_MAINNET]: {
         symbol: 'SOL',
-        name: 'Solana',
         decimals: 9,
     },
-    // Add other networks here when needed
+    [Network.SOLANA_DEVNET]: {
+        symbol: 'SOL',
+        decimals: 9,
+    },
 } as const;
 
 export type NetworkToken = keyof typeof NETWORK_TOKENS; 

@@ -1,3 +1,5 @@
+import { Network } from "@/lib/blockchain/network";
+
 export enum TransactionSpeed {
     SLOW = 'slow',
     MEDIUM = 'medium',
@@ -12,6 +14,7 @@ export interface DistributionRecipient {
 export interface DistributionCalculationRequest {
     recipients: DistributionRecipient[];
     speed: TransactionSpeed;
+    network: Network;
 }
 
 export interface FeeBreakdown {
@@ -23,5 +26,6 @@ export interface FeeBreakdown {
 export interface DistributionCalculationResponse {
     totalTransactions: number;
     fees: FeeBreakdown;
-    estimatedTime: string; // in minutes
+    estimatedTime: string;
+    network: Network;
 }

@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
-import { TOKEN_PROGRAM_ID, createTransferInstruction, getAssociatedTokenAddress, createAssociatedTokenAccountInstruction } from '@solana/spl-token';
+import { createTransferInstruction, getAssociatedTokenAddress, createAssociatedTokenAccountInstruction } from '@solana/spl-token';
 import { QRCodeSVG } from 'qrcode.react';
-import { Network } from '@/lib/blockchain/network';
+import { useNetwork } from '../hooks/useWallet';
 
 interface DepositBlockProps {
     depositAddress: string;
@@ -24,12 +24,13 @@ export const DepositBlock = ({
     const [solBalance, setSolBalance] = useState<number>(0);
     const [splBalance, setSplBalance] = useState<number>(0);
     const { publicKey, sendTransaction } = useWallet();
+    const { network } = useNetwork();
     const { connection } = useConnection();
 
     useEffect(() => {
+        console.log('network', network);
         const checkBalances = async () => {
             try {
-                const network = connection.rpcEndpoint.includes('devnet') ? Network.SOLANA_DEVNET : Network.SOLANA_MAINNET;
                 const response = await fetch(`/api/check-balances?address=${depositAddress}&network=${network}`);
                 const data = await response.json();
 
@@ -52,7 +53,7 @@ export const DepositBlock = ({
         checkBalances();
         const interval = setInterval(checkBalances, 15000);
         return () => clearInterval(interval);
-    }, [depositAddress, solAmount, splAmount, connection, onReadyToProceed]);
+    }, [depositAddress, solAmount, splAmount, connection, onReadyToProceed, network]);
 
     const handleSolDeposit = async () => {
         if (!publicKey || !sendTransaction) return;

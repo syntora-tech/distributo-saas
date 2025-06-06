@@ -54,7 +54,7 @@ export default function DistributionCard({ distribution }: DistributionCardProps
                     <div>
                         <p className="text-sm text-gray-500 mb-1">Deposit Address</p>
                         <p className="text-sm font-mono text-gray-900 truncate">
-                            {distribution.depositAddress.address}
+                            {distribution.depositAddress}
                         </p>
                     </div>
                 </div>

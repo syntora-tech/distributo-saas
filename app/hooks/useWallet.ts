@@ -1,3 +1,4 @@
+import { Network } from '@/lib/blockchain/network';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { useEffect, useState } from 'react';
@@ -67,4 +68,18 @@ export function useWalletSign() {
     };
 
     return { sign, loading, error };
+}
+
+export function useNetwork() {
+    const { connection } = useConnection();
+    const [network, setNetwork] = useState<Network | null>(null);
+
+    useEffect(() => {
+        const network = connection.rpcEndpoint.includes('devnet') ? Network.SOLANA_DEVNET : Network.SOLANA_MAINNET;
+        console.log('network', network);
+        console.log('connection', connection);
+        setNetwork(network);
+    }, [connection]);
+
+    return { network };
 } 

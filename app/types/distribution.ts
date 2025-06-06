@@ -1,5 +1,3 @@
-import { Transaction } from "@prisma/client";
-
 export interface Recipient {
     address: string;
     amount: number;
@@ -9,7 +7,7 @@ export interface DistributionFormData {
     tokenAddress: string;
     tokenName: string;
     recipients: Recipient[];
-    depositAddress?: string;
+    depositAddress: string;
 }
 
 export type DistributionStep = 'create' | 'recipients' | 'review' | 'distribution' | 'complete';
@@ -31,6 +29,6 @@ export interface Distribution {
     createdAt: string;
     updatedAt: string;
     depositAddress: string;
-    transactions: Transaction[];
+    recipients: Recipient[];
     userId: string;
 } 

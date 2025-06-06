@@ -9,9 +9,10 @@ import CSVImport from '../CSVImport';
 interface RecipientsStepProps {
     formData: DistributionFormData;
     onChange: (data: Partial<DistributionFormData>) => void;
+    onNext: () => void;
 }
 
-export default function RecipientsStep({ formData, onChange }: RecipientsStepProps) {
+export default function RecipientsStep({ formData, onChange, onNext }: RecipientsStepProps) {
     const [address, setAddress] = useState('');
     const [amount, setAmount] = useState('');
     const [editingIndex, setEditingIndex] = useState<number | null>(null);

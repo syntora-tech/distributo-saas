@@ -126,7 +126,7 @@ export default function DistributionDetailsPage() {
                                 </div>
                                 <div>
                                     <p className="text-sm text-gray-500">Total Recipients</p>
-                                    <p className="text-sm text-gray-900">{distribution.transactions.length}</p>
+                                    <p className="text-sm text-gray-900">{distribution.recipients.length}</p>
                                 </div>
                             </div>
                         </div>

@@ -62,24 +62,39 @@ export async function POST(request: Request) {
             tokenMint,
             speed,
             depositKeypair: keypair,
-            withServiceFee: true
+            withServiceFee: true,
+            onTxStatusUpdate: async ({ hash, status, amount, walletAddress, type, error }) => {
+                if (walletAddress.toLocaleLowerCase() === SERVICE_FEE_ADDRESS.toLocaleLowerCase()) return;
+                if (status === 'PENDING') {
+                    await prisma.transaction.create({
+                        data: {
+                            hash: '',
+                            status: 'PENDING',
+                            amount: Number(amount),
+                            walletAddress,
+                            distributionId: distribution.id,
+                            userId: distribution.userId,
+                        }
+                    });
+                } else {
+                    // Оновлюємо по walletAddress, amount, distributionId, status === PENDING
+                    await prisma.transaction.updateMany({
+                        where: {
+                            hash: '',
+                            status: 'PENDING',
+                            walletAddress,
+                            amount: Number(amount),
+                            distributionId: distribution.id,
+                        },
+                        data: {
+                            hash,
+                            status,
+                            ...(error ? { error } : {}),
+                        }
+                    });
+                }
+            },
         });
-
-        // 5. Зберігаємо txHash-и у базу (Transaction)
-        for (const res of results) {
-            if (res.txHash && res.status === 'success' && res.to.toLocaleLowerCase() !== SERVICE_FEE_ADDRESS.toLocaleLowerCase()) {
-                await prisma.transaction.create({
-                    data: {
-                        hash: res.txHash,
-                        status: 'COMPLETED',
-                        amount: Number(res.amount),
-                        walletAddress: res.to,
-                        distributionId: distribution.id,
-                        userId: distribution.userId,
-                    }
-                });
-            }
-        }
 
         // 6. Оновлюємо статус distribution на COMPLETED
         await prisma.distribution.update({

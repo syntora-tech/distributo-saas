@@ -60,12 +60,12 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
             formData: initialData ? {
                 tokenAddress: initialData.tokenAddress,
                 tokenName: initialData.name,
-                transactions: initialData.transactions || [],
+                recipients: initialData.recipients || [],
                 depositAddress: initialData.depositAddress,
             } : {
                 tokenAddress: '',
                 tokenName: '',
-                transactions: [],
+                recipients: [],
             },
             isDistributing: false,
             distributionProgress: 0,
@@ -176,13 +176,13 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
             case 0:
                 return <CreateStep formData={formData} onChange={handleFormChange} onNext={handleNext} />;
             case 1:
-                return <RecipientsStep formData={formData} onChange={handleFormChange} />;
+                return <RecipientsStep formData={formData} onChange={handleFormChange} onNext={handleNext} />;
             case 2:
                 return <ReviewStep formData={formData} txSettings={txSettings} onTxSettingsChange={handleTxSettingsChange} />;
             case 3:
                 return <DepositStep formData={formData} txSettings={txSettings} onNext={handleNext} />;
             case 4:
-                return <DistributionStep progress={distributionProgress} />;
+                return <DistributionStep depositAddress={formData.depositAddress} txSettings={txSettings!} />;
             case 5:
                 return <CompleteStep onDownloadReport={handleDownloadReport} />;
             default:
@@ -236,37 +236,45 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
                     <div className="bg-white shadow-sm rounded-xl p-8">
                         {renderStep()}
 
-                        {currentStep < 4 && (
-                            <div className="mt-12 flex justify-end space-x-4">
-                                {(currentStep > 1 || !isDistributionCreated) && (
-                                    <button
-                                        onClick={handleBack}
-                                        className="px-6 py-3 text-sm font-medium bg-white text-gray-700 border-2 border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50"
-                                    >
-                                        Back
-                                    </button>
-                                )}
-                                {currentStep === 3 ? (
-                                    <button
-                                        onClick={handleSubmit}
-                                        disabled={isDistributing}
-                                        className="px-6 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        {isDistributing ? (
-                                            <div className="flex items-center">
-                                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                </svg>
-                                                Submitting...
-                                            </div>
-                                        ) : (
-                                            'Submit Distribution'
-                                        )}
-                                    </button>
-                                ) : null}
-                            </div>
-                        )}
+                        <div className="mt-12 flex justify-end space-x-4">
+                            {currentStep > 1 && (
+                                <button
+                                    onClick={handleBack}
+                                    className="px-6 py-3 text-sm font-medium bg-white text-gray-700 border-2 border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50"
+                                >
+                                    Back
+                                </button>
+                            )}
+                            {currentStep === 3 ? (
+                                <button
+                                    onClick={handleSubmit}
+                                    disabled={isDistributing}
+                                    className="px-6 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isDistributing ? (
+                                        <div className="flex items-center">
+                                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Submitting...
+                                        </div>
+                                    ) : (
+                                        'Submit Distribution'
+                                    )}
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={handleNext}
+                                    className="px-6 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                                    disabled={
+                                        (currentStep === 1 && formData.recipients.length === 0)
+                                    }
+                                >
+                                    Next
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </>
             )}

@@ -4,7 +4,6 @@ import { DistributionFormData } from '../../types/distribution';
 import Table from '../Table';
 import { useEffect, useState } from 'react';
 import { useDistribution } from '@/hooks/useDistribution';
-import { Network } from '@/lib/blockchain/network';
 import { TransactionSpeedSelector } from './TransactionSpeedSelector';
 import { TransactionSpeed } from '@/types/distribution';
 import { NETWORK_TOKENS } from '@/lib/blockchain/config';
@@ -14,14 +13,12 @@ interface ReviewStepProps {
     formData: DistributionFormData;
     txSettings: CalculationData | null;
     onTxSettingsChange?: (data: CalculationData) => void;
-    networkToken?: keyof typeof NETWORK_TOKENS;
 }
 
 export default function ReviewStep({
     formData,
     txSettings,
     onTxSettingsChange,
-    networkToken = 'SOL'
 }: ReviewStepProps) {
     const { distribution, recipients } = useDistribution();
 
@@ -58,7 +55,6 @@ export default function ReviewStep({
                     <TransactionSpeedSelector
                         recipients={formData.recipients}
                         onTxSettingsChange={onTxSettingsChange || (() => { })}
-                        networkToken={networkToken}
                         initialSpeed={txSettings?.speed || TransactionSpeed.MEDIUM}
                     />
                 </div>

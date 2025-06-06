@@ -207,13 +207,15 @@ export class TransferOptimizer {
         tokenMint,
         speed,
         depositKeypair,
-        withServiceFee = true
+        withServiceFee = true,
+        onTxStatusUpdate,
     }: {
         recipients: { to: string; amount: number | string }[];
         tokenMint: PublicKey;
         speed: TransactionSpeed;
         depositKeypair: Keypair;
         withServiceFee?: boolean;
+        onTxStatusUpdate?: (tx: { hash: string; status: string; amount: number; walletAddress: string; type: string; error?: string }) => Promise<void>;
     }): Promise<SplTransferResult[]> {
         const results: SplTransferResult[] = [];
         const priorityFeeIx = this.getPriorityFeeInstructionBySpeed(speed);
@@ -268,7 +270,6 @@ export class TransferOptimizer {
         let currentSize = this.#estimateInstructionsSize(currentChunk);
         let chunkRecipients: { to: string; amount: number | string }[] = [];
         const chunkRecipientsArr: { to: string; amount: number | string }[][] = [];
-        console.log('allInstructions', allInstructions);
         for (const { to, amount, ixs } of allInstructions) {
             for (const ix of ixs) {
                 const estimatedSize = this.#estimateInstructionsSize([...currentChunk, ix]);
@@ -355,6 +356,18 @@ export class TransferOptimizer {
             console.log('-------------------------------');
 
             try {
+                // PENDING: одразу після відправки (до підтвердження)
+                for (const r of chunkRecipientsArr[i]) {
+                    if (onTxStatusUpdate) {
+                        await onTxStatusUpdate({
+                            hash: '',
+                            status: 'PENDING',
+                            amount: Number(r.amount) / Math.pow(10, decimals),
+                            walletAddress: r.to,
+                            type: 'SPL_TRANSFER',
+                        });
+                    }
+                }
                 const sendResult = await this.#sendWithRetry(tx, [payer], 3);
                 const now = new Date().toISOString();
                 for (const r of chunkRecipientsArr[i]) {
@@ -366,8 +379,17 @@ export class TransferOptimizer {
                         timestamp: now,
                         status: 'success'
                     });
+                    if (onTxStatusUpdate) {
+                        await onTxStatusUpdate({
+                            hash: sendResult.txHash,
+                            status: 'COMPLETED',
+                            amount: Number(r.amount) / Math.pow(10, decimals),
+                            walletAddress: r.to,
+                            type: 'SPL_TRANSFER',
+                        });
+                    }
                 }
-                // Якщо це транзакція з ServiceFee, додаємо окремий запис
+                // ServiceFee
                 if (withServiceFee && txChunks[i].some(ix => ix.programId && ix.programId.equals(SystemProgram.programId) && ix.keys.some(k => k.pubkey.toBase58() === SERVICE_FEE_ADDRESS))) {
                     results.push({
                         type: typeOfTransaction.SERVICE_FEE,
@@ -390,6 +412,16 @@ export class TransferOptimizer {
                         status: 'failed',
                         error: (err as Error).message
                     });
+                    if (onTxStatusUpdate) {
+                        await onTxStatusUpdate({
+                            hash: '',
+                            status: 'FAILED',
+                            amount: Number(r.amount) / Math.pow(10, decimals),
+                            walletAddress: r.to,
+                            type: 'SPL_TRANSFER',
+                            error: (err as Error).message
+                        });
+                    }
                 }
                 if (withServiceFee && txChunks[i].some(ix => ix.programId && ix.programId.equals(SystemProgram.programId) && ix.keys.some(k => k.pubkey.toBase58() === SERVICE_FEE_ADDRESS))) {
                     results.push({

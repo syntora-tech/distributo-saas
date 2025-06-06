@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { DistributionFormData } from '../../types/distribution';
+import { DistributionFormData, Recipient } from '../../types/distribution';
 import { DepositBlock } from '../DepositBlock';
 import { useDistribution } from '@/hooks/useDistribution';
 import { CalculationData } from './TransactionSpeedSelector';
@@ -25,7 +25,7 @@ export default function DepositStep({ formData, onNext, txSettings }: DepositSte
 
     if (!distribution) return null;
 
-    const totalSplAmount = formData.recipients.reduce((sum, r) => sum + r.amount, 0);
+    const totalSplAmount = formData.recipients.reduce((sum: number, r: Recipient) => sum + r.amount, 0);
 
     return (
         <div className="space-y-8">
@@ -39,15 +39,6 @@ export default function DepositStep({ formData, onNext, txSettings }: DepositSte
                     splAmount={totalSplAmount}
                     onReadyToProceed={setIsReadyToProceed}
                 />
-            </div>
-            <div className="flex justify-end">
-                <button
-                    onClick={handleDeposit}
-                    disabled={!isReadyToProceed}
-                    className={`px-6 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
-                >
-                    Next
-                </button>
             </div>
         </div>
     );

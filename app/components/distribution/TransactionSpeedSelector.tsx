@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { TransactionSpeed } from '@/types/distribution';
 import { NETWORK_TOKENS } from '@/lib/blockchain/config';
+import { Network } from '@/lib/blockchain/network';
+import { useNetwork } from '@/app/hooks/useWallet';
 
 export interface CalculationData {
     totalTransactions: number;
@@ -11,25 +13,29 @@ export interface CalculationData {
         total: string;
     };
     estimatedTime: string;
+    network: Network;
 }
 
 interface TransactionSpeedSelectorProps {
     recipients: { address: string; amount: number }[];
     onTxSettingsChange: (data: CalculationData) => void;
     initialSpeed: TransactionSpeed;
-    networkToken?: keyof typeof NETWORK_TOKENS;
 }
 
 export function TransactionSpeedSelector({
     recipients,
     onTxSettingsChange,
     initialSpeed,
-    networkToken = 'SOL'
 }: TransactionSpeedSelectorProps) {
+    const network = useNetwork();
     const [selectedSpeed, setSelectedSpeed] = useState<TransactionSpeed>(initialSpeed);
     const [calculation, setCalculation] = useState<CalculationData | null>(null);
-
     const calculateFees = async (speed: TransactionSpeed) => {
+
+        if (!network) {
+            return;
+        }
+
         try {
             const response = await fetch('/api/distribution/calculate', {
                 method: 'POST',
@@ -42,6 +48,7 @@ export function TransactionSpeedSelector({
                         amount: r.amount.toString()
                     })),
                     speed,
+                    network: network
                 }),
             });
 
@@ -61,7 +68,6 @@ export function TransactionSpeedSelector({
 
     const handleTxSettingsChange = async (speed: TransactionSpeed) => {
         setSelectedSpeed(speed);
-        await calculateFees(speed);
     };
 
     useEffect(() => {
@@ -72,9 +78,9 @@ export function TransactionSpeedSelector({
 
     useEffect(() => {
         calculateFees(selectedSpeed);
-    }, []);
+    }, [network, selectedSpeed]);
 
-    const tokenSymbol = NETWORK_TOKENS[networkToken].symbol;
+    const tokenSymbol = NETWORK_TOKENS[network as Network]?.symbol;
 
     return (
         <div className="space-y-4">
