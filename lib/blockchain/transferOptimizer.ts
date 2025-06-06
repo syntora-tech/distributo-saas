@@ -320,6 +320,7 @@ export class TransferOptimizer {
             return recipients.map(r => ({
                 to: r.to,
                 amount: r.amount,
+                type: typeOfTransaction.SPL_TRANSFER,
                 txHash: '',
                 timestamp: new Date().toISOString(),
                 status: 'failed',
