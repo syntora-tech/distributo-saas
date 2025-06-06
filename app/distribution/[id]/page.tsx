@@ -105,8 +105,8 @@ export default function DistributionDetailsPage() {
                             </p>
                         </div>
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${distribution.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
-                                distribution.status === 'ACTIVE' ? 'bg-blue-100 text-blue-800' :
-                                    'bg-yellow-100 text-yellow-800'
+                            distribution.status === 'ACTIVE' ? 'bg-blue-100 text-blue-800' :
+                                'bg-yellow-100 text-yellow-800'
                             }`}>
                             {distribution.status}
                         </span>
@@ -122,11 +122,11 @@ export default function DistributionDetailsPage() {
                                 </div>
                                 <div>
                                     <p className="text-sm text-gray-500">Deposit Address</p>
-                                    <p className="text-sm font-mono text-gray-900">{distribution.depositAddress.address}</p>
+                                    <p className="text-sm font-mono text-gray-900">{distribution.depositAddress}</p>
                                 </div>
                                 <div>
                                     <p className="text-sm text-gray-500">Total Recipients</p>
-                                    <p className="text-sm text-gray-900">{distribution.recipients.length}</p>
+                                    <p className="text-sm text-gray-900">{distribution.transactions.length}</p>
                                 </div>
                             </div>
                         </div>

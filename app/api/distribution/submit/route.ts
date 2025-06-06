@@ -81,6 +81,12 @@ export async function POST(request: Request) {
             }
         }
 
+        // 6. Оновлюємо статус distribution на COMPLETED
+        await prisma.distribution.update({
+            where: { id: distribution.id },
+            data: { status: 'COMPLETED' }
+        });
+
         return NextResponse.json({ distributionId: distribution.id, results });
     } catch (error) {
         console.error('Error submitting distribution:', error);

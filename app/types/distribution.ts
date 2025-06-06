@@ -1,3 +1,5 @@
+import { Transaction } from "@prisma/client";
+
 export interface Recipient {
     address: string;
     amount: number;
@@ -29,6 +31,6 @@ export interface Distribution {
     createdAt: string;
     updatedAt: string;
     depositAddress: string;
-    recipients: Recipient[];
+    transactions: Transaction[];
     userId: string;
 } 

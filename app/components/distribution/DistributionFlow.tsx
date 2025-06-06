@@ -60,12 +60,12 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
             formData: initialData ? {
                 tokenAddress: initialData.tokenAddress,
                 tokenName: initialData.name,
-                recipients: initialData.recipients || [],
+                transactions: initialData.transactions || [],
                 depositAddress: initialData.depositAddress,
             } : {
                 tokenAddress: '',
                 tokenName: '',
-                recipients: [],
+                transactions: [],
             },
             isDistributing: false,
             distributionProgress: 0,
@@ -207,68 +207,69 @@ export default function DistributionFlow({ initialData }: DistributionFlowProps)
                 </div>
             )}
 
-            <nav aria-label="Progress" className="mb-12">
-                <ol role="list" className="space-y-4 md:flex md:space-x-8 md:space-y-0">
-                    {steps.map((step, index) => (
-                        <li key={step.id} className="md:flex-1">
-                            <div
-                                className={`group flex flex-col border-l-4 py-2 pl-4 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4 ${index <= currentStep
-                                    ? 'border-blue-600'
-                                    : 'border-gray-200'
-                                    }`}
-                            >
-                                <span className="text-sm font-medium text-blue-600">
-                                    Step {index + 1}
-                                </span>
-                                <span className="text-sm font-medium">{step.name}</span>
-                            </div>
-                        </li>
-                    ))}
-                </ol>
-            </nav>
-
-            <div className="bg-white shadow-sm rounded-xl p-8">
-                {renderStep()}
-
-                {currentStep < 4 && (
-                    <div className="mt-12 flex justify-end space-x-4">
-                        {(currentStep > 1 || !isDistributionCreated) && (
-                            <button
-                                onClick={handleBack}
-                                className="px-6 py-3 text-sm font-medium bg-white text-gray-700 border-2 border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50"
-                            >
-                                Back
-                            </button>
-                        )}
-                        {currentStep === 3 ? (
-                            <button
-                                onClick={handleSubmit}
-                                disabled={isDistributing}
-                                className="px-6 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {isDistributing ? (
-                                    <div className="flex items-center">
-                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        Submitting...
+            {initialData?.status === 'COMPLETED' ? (
+                <div className="bg-white shadow-sm rounded-xl p-8">
+                    <CompleteStep onDownloadReport={handleDownloadReport} />
+                </div>
+            ) : (
+                <>
+                    <nav aria-label="Progress" className="mb-12">
+                        <ol role="list" className="space-y-4 md:flex md:space-x-8 md:space-y-0">
+                            {steps.map((step, index) => (
+                                <li key={step.id} className="md:flex-1">
+                                    <div
+                                        className={`group flex flex-col border-l-4 py-2 pl-4 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4 ${index <= currentStep
+                                            ? 'border-blue-600'
+                                            : 'border-gray-200'
+                                            }`}
+                                    >
+                                        <span className="text-sm font-medium text-blue-600">
+                                            Step {index + 1}
+                                        </span>
+                                        <span className="text-sm font-medium">{step.name}</span>
                                     </div>
-                                ) : (
-                                    'Submit Distribution'
+                                </li>
+                            ))}
+                        </ol>
+                    </nav>
+
+                    <div className="bg-white shadow-sm rounded-xl p-8">
+                        {renderStep()}
+
+                        {currentStep < 4 && (
+                            <div className="mt-12 flex justify-end space-x-4">
+                                {(currentStep > 1 || !isDistributionCreated) && (
+                                    <button
+                                        onClick={handleBack}
+                                        className="px-6 py-3 text-sm font-medium bg-white text-gray-700 border-2 border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50"
+                                    >
+                                        Back
+                                    </button>
                                 )}
-                            </button>
-                        ) : (
-                            <button
-                                onClick={handleNext}
-                                className="px-6 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-                            >
-                                Next
-                            </button>
+                                {currentStep === 3 ? (
+                                    <button
+                                        onClick={handleSubmit}
+                                        disabled={isDistributing}
+                                        className="px-6 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {isDistributing ? (
+                                            <div className="flex items-center">
+                                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                Submitting...
+                                            </div>
+                                        ) : (
+                                            'Submit Distribution'
+                                        )}
+                                    </button>
+                                ) : null}
+                            </div>
                         )}
                     </div>
-                )}
-            </div>
+                </>
+            )}
         </div>
     );
 } 
